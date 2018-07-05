@@ -65,19 +65,48 @@ lines(time.div(test.complex.index,
                0.25),
       lwd=2,
       col=div.pallet[1])
+lines(midstage,occurtot,col='black',lwd=2)
 lines(time.div(1:length(genus.dataframe$genus),
                genus.dataframe$origin,
                genus.dataframe$extin,
                0.25),
       lwd=2,
       col=div.pallet[2])
+lines(midstage,occurtot.genus,col='black',lwd=2)
 lines(time.div(1:length(family.dataframe$genus),
                family.dataframe$origin,
                family.dataframe$extin,
                0.25),
       lwd=2,
       col=div.pallet[3])
+lines(midstage,occurtot.family,col="black",lwd=2)
+```
+
+![](EntireRange_files/figure-html/diversity w diff timescales-1.png)<!-- -->
+The difference between the 0.25 myr binned and zone scheme binned are pretty stark. In most timeperiods the zonal scheme inflates the number of individuals. There are a few times that isn't hte case, the later part of the Cretaceous, the Danian, the latter stages of the Paleogene, and the later portion of the Miocene. This is much less the case for the genus, which appears much more stable. While this seems obvious, it's an important difference, and suggests that binning schemes are much more important in the lower taxonomic levels. 
+A case certainly should be made that there are instances (Danian, for example) where the additional resolution is useful. Where doing a longer record however, the zone scheme is appropriate.
+
+## Macrorates
+
+```r
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     ylim=c(-3,1.5),
+     xlab='Time (Ma)',
+     ylab="Macroevolutionary Rates")
+lines(midstage,p,
+      lwd=2,
+      col='blue')
+lines(midstage,-q,
+      col='red',
+      lwd=2)
+abline(h=0,col='grey',lwd=.5)
 ```
 
 ![](EntireRange_files/figure-html/macrorates-1.png)<!-- -->
+
+From Fraass et al. 2015. Needs to add the siginficant rates, but I think I can leave off the envelope. Do need to grab which zones that was from that paper... possibly by hand because of the fiddly nearly non-signficiant ones, just to be consistent. 
+
+
 
