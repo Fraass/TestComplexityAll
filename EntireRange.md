@@ -222,4 +222,46 @@ I kept twiddling with the knobs. I'm increasingly convinced that this dataset ca
 So, back to test complexity then.
 
 
+## Test Complexity
+
+```r
+ for(i in inc){
+    decostand(morph[,i],method= 'standardize',margin=2,na.rm=T)->morph[,i]
+   abs(morph[,i])->morph[,i]
+  } #making each measurement set range from 0 to 1
+  #rowSums(morph[,inc])/length(inc)->test.complex.index #creating a single value
+  rowSums(morph[,inc])->test.complex.index
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     #xlim=c(80,50),
+     ylim=c(min(test.complex.index,na.rm=T),
+            max(test.complex.index,na.rm=T)),
+     xlab='Time (Ma)',
+     ylab="Test Complexity")
+segments(morph$origin,
+         test.complex.index,
+         morph$extin,
+         test.complex.index)
+```
+
+![](EntireRange_files/figure-html/test complexity-1.png)<!-- -->
+Test complexity is constructed by standardizing the values within each parameter (each parameter has a unit variance and mean of zero). Thus, the average morphological parameter (for example, number of chambers, mean = 0.7) is 0, while a higher number of chambers is a positive number, while a lower number of chambers is negative. The absolute values of the parameters are then summed together, to examine the deviations from an 'average' test, resulting in Figure TESTCOMPLEXITY. 
+
+
+```r
+time.var(test.complex.index,morph$origin,morph$extin,.5)->temp
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="Variance of Test Complexity",
+     ylim=c(min(temp[,2],na.rm=T),
+            max(temp[,2],na.rm=T))
+  )
+  lines(temp[,1],temp[,2],lwd=2,col='blue')
+geotimescale(-2,0)
+```
+
+![](EntireRange_files/figure-html/variance-1.png)<!-- -->
 
