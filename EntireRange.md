@@ -109,4 +109,54 @@ abline(h=0,col='grey',lwd=.5)
 From Fraass et al. 2015. Needs to add the siginficant rates, but I think I can leave off the envelope. Do need to grab which zones that was from that paper... possibly by hand because of the fiddly nearly non-signficiant ones, just to be consistent. 
 
 
+```r
+inc<-c(#"w",
+  #"mtheta",
+  #"lw",
+  #"lh",
+  #"ic1",
+  #"ic2",
+  #"ic3",
+  "fcirc",
+  "t",
+  "numcham",
+  "expans",
+  #"height",
+  #"length",
+  #"fcangle",
+  "area",
+  "fcarea",
+  "clava",
+  #"chamwl",
+  "keel",
+  #"bidors",
+  #"biven",
+  "biconvex",
+  "lobe"
+  #"double"
+  #"depth"
+)
+pairs(morph[,inc],pch=16,cex=.4)  
+```
 
+![](EntireRange_files/figure-html/morphology-1.png)<!-- -->
+
+Plot of the included morphometric parameters. used to look for correlations, so that we can not include those. 
+
+
+```r
+foram.dataframe->morph
+exclude<-c(4)
+morph[1:length(morph[,1]) %w/o% exclude,]->morph
+morph[which(is.na(rowSums(morph[,inc])) == F),13:36]->pca.in
+decostand(pca.in[,inc],method='standardize',2)->pca.in
+princomp(pca.in)->res.pca
+plot(res.pca)
+```
+
+![](EntireRange_files/figure-html/PCA-1.png)<!-- -->
+
+```r
+ res.pca$sdev^2/sum(res.pca$sdev^2)->PoV
+```
+Results of the Principle Components Analysis (PCA). First, second, and third axes contain ~58.81% of the variance
