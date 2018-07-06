@@ -136,6 +136,32 @@ inc<-c(#"w",
   #"double"
   #"depth"
 )
+inc2<-c(#"w",
+  "mtheta",
+  "lw",
+  "lh",
+  #"ic1",
+  #"ic2",
+  #"ic3",
+  "fcirc",
+  "t",
+  "numcham",
+  "expans",
+  #"height",
+  #"length",
+  "fcangle",
+  "area",
+  #"fcarea",
+  "clava",
+  "chamwl",
+  "keel",
+  #"bidors",
+  #"biven",
+  "biconvex",
+  "lobe",
+  "double"
+  #"depth"
+)
 pairs(morph[,inc],pch=16,cex=.4)  
 ```
 
@@ -159,4 +185,41 @@ plot(res.pca)
 ```r
  res.pca$sdev^2/sum(res.pca$sdev^2)->PoV
 ```
-Results of the Principle Components Analysis (PCA). First, second, and third axes contain ~58.81% of the variance
+Results of the Principle Components Analysis (PCA). First, second, and third axes contain ~58.81% of the variance. 
+
+
+
+```r
+foram.dataframe->morph
+exclude<-c(4)
+morph[1:length(morph[,1]) %w/o% exclude,]->morph
+morph[which(is.na(rowSums(morph[,inc2])) == F),13:36]->pca.in
+decostand(pca.in[,inc2],method='standardize',2)->pca.in
+princomp(pca.in)->res.pca2
+plot(res.pca2)
+```
+
+![](EntireRange_files/figure-html/PCA2-1.png)<!-- -->
+
+```r
+ res.pca2$sdev^2/sum(res.pca2$sdev^2)->PoV2
+```
+Results of a second Principle Components Analysis (PCA) which includes all morphometric parameters. First, second, and third axes contain ~50.8% of the variance. 
+
+```r
+biplot(res.pca2)
+```
+
+![](EntireRange_files/figure-html/biplot2-1.png)<!-- -->
+So, including targeted set lets us look at fewer components, with higher variance explained. The number of chamber parameters seem to dominate the first axis in the second kitchen-sink approach. That makes sense, since the number of chambers int he final whorl is dependent on the interchamber angle, which is then summarized by mtheta. So, mtheta, ic1:5 are all covarying, while number of chamber is placed at the other side. Axis two looks like it's size, (theres also some loading of size on A1). big keeled things v. others.
+
+The thing I don't like is the scree plot isn't steep. The first has lots of variance spread out through the various axes. 
+
+I think that actually makes sense. All of our measurements were designed to discriminate between the major groups, and be highly varying. Thus, because of the nature of our measruermnets the variance should be distributed because we did that on purpose. 
+
+I kept twiddling with the knobs. I'm increasingly convinced that this dataset can't be looked at with a PCA becasue there's too much variance in too many different parameters. Like, I top out with the first-thrid axis explaining not-quite 60% of the variance. That's crap.
+
+So, back to test complexity then.
+
+
+
