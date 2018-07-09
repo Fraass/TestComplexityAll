@@ -225,6 +225,7 @@ So, back to test complexity then.
 ## Test Complexity
 
 ```r
+foram.dataframe->morph
  for(i in inc){
     decostand(morph[,i],method= 'standardize',margin=2,na.rm=T)->morph[,i]
    abs(morph[,i])->morph[,i]
@@ -250,7 +251,7 @@ Test complexity is constructed by standardizing the values within each parameter
 
 
 ```r
-time.var(test.complex.index,morph$origin,morph$extin,.5)->temp
+time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
 plot(0,0,
      type='n',
      xlim=c(170,0),
@@ -259,9 +260,251 @@ plot(0,0,
      ylim=c(min(temp[,2],na.rm=T),
             max(temp[,2],na.rm=T))
   )
-  lines(temp[,1],temp[,2],lwd=2,col='blue')
-geotimescale(-2,0)
+  lines(temp[,1],temp[,2],lwd=4,col='blue')
+  time.var(test.complex.index,morph$origin,morph$extin,.1)->temp
+    lines(temp[,1],temp[,2],lwd=3,col='black')
+  time.var(test.complex.index,morph$origin,morph$extin,.5)->temp
+    lines(temp[,1],temp[,2],lwd=2,col='grey40')
+      time.var(test.complex.index,morph$origin,morph$extin,1)->temp
+    lines(temp[,1],temp[,2],lwd=2,col='grey60')
 ```
 
 ![](EntireRange_files/figure-html/variance-1.png)<!-- -->
+
+Trends in the variance are robust across different binning schemes, particularily in the Cenozoic. There appears to be no substantive difference between a biostratigraphic binning scheme (Fraass et al., 2015) or a million year binning scheme (0.1, 0.5, 1 myr tested).
+
+
+```r
+plot(p[1:84],time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2],
+     xlab="p",ylab="Variance in Test Complexity")
+```
+
+![](EntireRange_files/figure-html/comparison variance extinction-1.png)<!-- -->
+
+```r
+cor.test(p[1:84],time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2])
+```
+
+```
+## 
+## 	Pearson's product-moment correlation
+## 
+## data:  p[1:84] and time.var(test.complex.index, morph$origin, morph$extin, timeresolution.dataframe)[1:84, p[1:84] and     2]
+## t = -0.52696, df = 82, p-value = 0.5996
+## alternative hypothesis: true correlation is not equal to 0
+## 95 percent confidence interval:
+##  -0.2691373  0.1582722
+## sample estimates:
+##         cor 
+## -0.05809431
+```
+
+```r
+plot(q.family[1:84],time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2],
+     xlab="q",ylab="Variance in Test Complexity")
+```
+
+![](EntireRange_files/figure-html/comparison variance extinction-2.png)<!-- -->
+
+```r
+cor.test(q[1:84],time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2])
+```
+
+```
+## 
+## 	Pearson's product-moment correlation
+## 
+## data:  q[1:84] and time.var(test.complex.index, morph$origin, morph$extin, timeresolution.dataframe)[1:84, q[1:84] and     2]
+## t = 0.43845, df = 82, p-value = 0.6622
+## alternative hypothesis: true correlation is not equal to 0
+## 95 percent confidence interval:
+##  -0.1677727  0.2600608
+## sample estimates:
+##        cor 
+## 0.04836204
+```
+
+```r
+plot(p[1:83],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]),
+     xlab="p(1)",ylab="first diff Variance in Test Complexity")
+```
+
+![](EntireRange_files/figure-html/comparison variance extinction-3.png)<!-- -->
+
+```r
+cor.test(p[1:83],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]))
+```
+
+```
+## 
+## 	Pearson's product-moment correlation
+## 
+## data:  p[1:83] and diff(time.var(test.complex.index, morph$origin, morph$extin, p[1:83] and     timeresolution.dataframe)[1:84, 2])
+## t = -0.41944, df = 81, p-value = 0.676
+## alternative hypothesis: true correlation is not equal to 0
+## 95 percent confidence interval:
+##  -0.2596361  0.1708510
+## sample estimates:
+##         cor 
+## -0.04655384
+```
+
+```r
+plot(q[1:83],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]),
+     xlab="q(1)",ylab="first diff Variance in Test Complexity")
+```
+
+![](EntireRange_files/figure-html/comparison variance extinction-4.png)<!-- -->
+
+```r
+cor.test(q[1:83],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]))
+```
+
+```
+## 
+## 	Pearson's product-moment correlation
+## 
+## data:  q[1:83] and diff(time.var(test.complex.index, morph$origin, morph$extin, q[1:83] and     timeresolution.dataframe)[1:84, 2])
+## t = 0.33071, df = 81, p-value = 0.7417
+## alternative hypothesis: true correlation is not equal to 0
+## 95 percent confidence interval:
+##  -0.1803971  0.2504268
+## sample estimates:
+##        cor 
+## 0.03672097
+```
+
+```r
+plot(p[2:84],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]),
+     xlab="p(1)",ylab="first diff Variance in Test Complexity")
+```
+
+![](EntireRange_files/figure-html/comparison variance extinction-5.png)<!-- -->
+
+```r
+cor.test(p[2:84],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]))
+```
+
+```
+## 
+## 	Pearson's product-moment correlation
+## 
+## data:  p[2:84] and diff(time.var(test.complex.index, morph$origin, morph$extin, p[2:84] and     timeresolution.dataframe)[1:84, 2])
+## t = -0.35225, df = 81, p-value = 0.7256
+## alternative hypothesis: true correlation is not equal to 0
+## 95 percent confidence interval:
+##  -0.2526665  0.1780829
+## sample estimates:
+##         cor 
+## -0.03910853
+```
+
+```r
+plot(q[2:84],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]),
+     xlab="q(1)",ylab="first diff Variance in Test Complexity")
+```
+
+![](EntireRange_files/figure-html/comparison variance extinction-6.png)<!-- -->
+
+```r
+cor.test(q[2:84],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]))
+```
+
+```
+## 
+## 	Pearson's product-moment correlation
+## 
+## data:  q[2:84] and diff(time.var(test.complex.index, morph$origin, morph$extin, q[2:84] and     timeresolution.dataframe)[1:84, 2])
+## t = 0.088791, df = 81, p-value = 0.9295
+## alternative hypothesis: true correlation is not equal to 0
+## 95 percent confidence interval:
+##  -0.2062630  0.2250755
+## sample estimates:
+##         cor 
+## 0.009865135
+```
+There is no correlation between q or p in the variance in test complexity. Additionally, one might suspect that the change in variance (like the end Cretaceous) would be correlated with elevated p or q. This is not the case. Variance in test complexity is not synchronous with the macroevolutionary rates at the species-, genus-, or family-levels. p values are also crap.
+
+
+```r
+plot(occurtot[1:84],time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2],
+     xlab="diversity",ylab="Variance in Test Complexity")
+```
+
+![](EntireRange_files/figure-html/diversity var-1.png)<!-- -->
+
+```r
+cor.test(occurtot[1:84],time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2])
+```
+
+```
+## 
+## 	Pearson's product-moment correlation
+## 
+## data:  occurtot[1:84] and time.var(test.complex.index, morph$origin, morph$extin, timeresolution.dataframe)[1:84, occurtot[1:84] and     2]
+## t = 4.1454, df = 82, p-value = 8.216e-05
+## alternative hypothesis: true correlation is not equal to 0
+## 95 percent confidence interval:
+##  0.2216222 0.5789680
+## sample estimates:
+##       cor 
+## 0.4162398
+```
+Only valid correlation is diversity ~ variance, which is obvious because the diversity is _n_ in the calculation of the variance. Not terribly intersting. Higher diversity means slightly higher variance.
+
+
+```r
+time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="Variance of Test Complexity",
+     ylim=c(min(temp[,2],na.rm=T),
+            max(temp[,2],na.rm=T))
+  )
+  lines(temp[,1],temp[,2],lwd=3,col='blue')
+lines(midstage,occurtot/5,col='black',lwd=2)
+```
+
+![](EntireRange_files/figure-html/variance v div-1.png)<!-- -->
+
+
+
+```r
+time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
+plot(timeresolution.dataframe[1:length(diff(temp[,1])),2],
+        diff(temp[,2]),
+     type='p',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="first diff Variance of Test Complexity",
+     #ylim=c(-7,7),
+     pch=16,
+     col="green"
+  )
+  abline(v=c(23,34,55,65.5))
+```
+
+![](EntireRange_files/figure-html/diffvariance-1.png)<!-- -->
+
+
+
+```r
+time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="Variance of Test Complexity",
+     ylim=c(min(temp[,2],na.rm=T),
+            max(temp[,2],na.rm=T))
+  )
+  lines(temp[,1],temp[,2],lwd=3,col='blue')
+lines(midstage,-q.genus*20+10,col='red',lwd=2)
+abline()
+```
+
+![](EntireRange_files/figure-html/variance v genus extinction-1.png)<!-- -->
+However, looking at individual timeperiods variance and extinction appear to be connected, most clearly at the genus level
 
