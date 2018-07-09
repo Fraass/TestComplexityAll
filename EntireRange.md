@@ -247,6 +247,12 @@ segments(morph$origin,
 ```
 
 ![](EntireRange_files/figure-html/test complexity-1.png)<!-- -->
+
+```r
+#highlighting significant macroevolutionary events
+which(timeresolution.dataframe$sig.origin == 'y')->sig.origin
+which(timeresolution.dataframe$sig.extin == 'y')->sig.extin
+```
 Test complexity is constructed by standardizing the values within each parameter (each parameter has a unit variance and mean of zero). Thus, the average morphological parameter (for example, number of chambers, mean = 0.7) is 0, while a higher number of chambers is a positive number, while a lower number of chambers is negative. The absolute values of the parameters are then summed together, to examine the deviations from an 'average' test, resulting in Figure TESTCOMPLEXITY. 
 
 
@@ -275,21 +281,19 @@ Trends in the variance are robust across different binning schemes, particularil
 
 
 ```r
-plot(p[1:84],time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2],
-     xlab="p",ylab="Variance in Test Complexity")
-```
+time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]->t.var
+-diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2])->d.t.var
 
-![](EntireRange_files/figure-html/comparison variance extinction-1.png)<!-- -->
-
-```r
-cor.test(p[1:84],time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2])
+plot(p[1:84],t.var,
+     xlab="p",ylab="Variance in Test Complexity",pch=16,col="grey")
+cor.test(p[1:84],t.var)
 ```
 
 ```
 ## 
 ## 	Pearson's product-moment correlation
 ## 
-## data:  p[1:84] and time.var(test.complex.index, morph$origin, morph$extin, timeresolution.dataframe)[1:84, p[1:84] and     2]
+## data:  p[1:84] and t.var
 ## t = -0.52696, df = 82, p-value = 0.5996
 ## alternative hypothesis: true correlation is not equal to 0
 ## 95 percent confidence interval:
@@ -300,21 +304,23 @@ cor.test(p[1:84],time.var(test.complex.index,morph$origin,morph$extin,timeresolu
 ```
 
 ```r
-plot(q.family[1:84],time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2],
-     xlab="q",ylab="Variance in Test Complexity")
+points(p[sig.extin],t.var[sig.extin],pch=3,lwd=2,col='red')
+points(p[sig.origin],t.var[sig.origin],pch=4,lwd=2,col='blue')
 ```
 
-![](EntireRange_files/figure-html/comparison variance extinction-2.png)<!-- -->
+![](EntireRange_files/figure-html/comparison variance extinction-1.png)<!-- -->
 
 ```r
-cor.test(q[1:84],time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2])
+plot(q[1:84],t.var,
+     xlab="q",ylab="Variance in Test Complexity",pch=16,col="grey")
+cor.test(q[1:84],t.var)
 ```
 
 ```
 ## 
 ## 	Pearson's product-moment correlation
 ## 
-## data:  q[1:84] and time.var(test.complex.index, morph$origin, morph$extin, timeresolution.dataframe)[1:84, q[1:84] and     2]
+## data:  q[1:84] and t.var
 ## t = 0.43845, df = 82, p-value = 0.6622
 ## alternative hypothesis: true correlation is not equal to 0
 ## 95 percent confidence interval:
@@ -325,104 +331,119 @@ cor.test(q[1:84],time.var(test.complex.index,morph$origin,morph$extin,timeresolu
 ```
 
 ```r
-plot(p[1:83],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]),
-     xlab="p(1)",ylab="first diff Variance in Test Complexity")
+points(q[sig.extin],t.var[sig.extin],pch=3,lwd=2,col='red')
+points(q[sig.origin],t.var[sig.origin],pch=4,lwd=2,col='blue')
+```
+
+![](EntireRange_files/figure-html/comparison variance extinction-2.png)<!-- -->
+
+```r
+plot(p[1:83],d.t.var,
+     xlab="p(1)",ylab="first diff Variance in Test Complexity",pch=16,col="grey")
+cor.test(p[1:83],d.t.var)
+```
+
+```
+## 
+## 	Pearson's product-moment correlation
+## 
+## data:  p[1:83] and d.t.var
+## t = 0.41944, df = 81, p-value = 0.676
+## alternative hypothesis: true correlation is not equal to 0
+## 95 percent confidence interval:
+##  -0.1708510  0.2596361
+## sample estimates:
+##        cor 
+## 0.04655384
+```
+
+```r
+points(p[sig.extin],d.t.var[sig.extin],pch=3,lwd=2,col='red')
+points(p[sig.origin],d.t.var[sig.origin],pch=4,lwd=2,col='blue')
 ```
 
 ![](EntireRange_files/figure-html/comparison variance extinction-3.png)<!-- -->
 
 ```r
-cor.test(p[1:83],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]))
+plot(q[1:83],d.t.var,
+     xlab="q(1)",ylab="first diff Variance in Test Complexity",pch=16,col="grey")
+cor.test(q[1:83],d.t.var)
 ```
 
 ```
 ## 
 ## 	Pearson's product-moment correlation
 ## 
-## data:  p[1:83] and diff(time.var(test.complex.index, morph$origin, morph$extin, p[1:83] and     timeresolution.dataframe)[1:84, 2])
-## t = -0.41944, df = 81, p-value = 0.676
+## data:  q[1:83] and d.t.var
+## t = -0.33071, df = 81, p-value = 0.7417
 ## alternative hypothesis: true correlation is not equal to 0
 ## 95 percent confidence interval:
-##  -0.2596361  0.1708510
+##  -0.2504268  0.1803971
 ## sample estimates:
 ##         cor 
-## -0.04655384
+## -0.03672097
 ```
 
 ```r
-plot(q[1:83],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]),
-     xlab="q(1)",ylab="first diff Variance in Test Complexity")
+points(q[sig.extin],d.t.var[sig.extin],pch=3,lwd=2,col='red')
+points(q[sig.origin],d.t.var[sig.origin],pch=4,lwd=2,col='blue')
 ```
 
 ![](EntireRange_files/figure-html/comparison variance extinction-4.png)<!-- -->
 
 ```r
-cor.test(q[1:83],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]))
+plot(p[2:84],d.t.var,
+     xlab="p(1)",ylab="first diff Variance in Test Complexity",pch=16,col="grey")
+cor.test(p[2:84],d.t.var)
 ```
 
 ```
 ## 
 ## 	Pearson's product-moment correlation
 ## 
-## data:  q[1:83] and diff(time.var(test.complex.index, morph$origin, morph$extin, q[1:83] and     timeresolution.dataframe)[1:84, 2])
-## t = 0.33071, df = 81, p-value = 0.7417
+## data:  p[2:84] and d.t.var
+## t = 0.35225, df = 81, p-value = 0.7256
 ## alternative hypothesis: true correlation is not equal to 0
 ## 95 percent confidence interval:
-##  -0.1803971  0.2504268
+##  -0.1780829  0.2526665
 ## sample estimates:
 ##        cor 
-## 0.03672097
+## 0.03910853
 ```
 
 ```r
-plot(p[2:84],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]),
-     xlab="p(1)",ylab="first diff Variance in Test Complexity")
+points(p[sig.extin+1],d.t.var[sig.extin],pch=3,lwd=2,col='red')
+points(p[sig.origin+1],d.t.var[sig.origin],pch=4,lwd=2,col='blue')
 ```
 
 ![](EntireRange_files/figure-html/comparison variance extinction-5.png)<!-- -->
 
 ```r
-cor.test(p[2:84],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]))
+plot(q[2:84],d.t.var,
+     xlab="q(1)",ylab="first diff Variance in Test Complexity",pch=16,col="grey")
+cor.test(q[2:84],d.t.var)
 ```
 
 ```
 ## 
 ## 	Pearson's product-moment correlation
 ## 
-## data:  p[2:84] and diff(time.var(test.complex.index, morph$origin, morph$extin, p[2:84] and     timeresolution.dataframe)[1:84, 2])
-## t = -0.35225, df = 81, p-value = 0.7256
+## data:  q[2:84] and d.t.var
+## t = -0.088791, df = 81, p-value = 0.9295
 ## alternative hypothesis: true correlation is not equal to 0
 ## 95 percent confidence interval:
-##  -0.2526665  0.1780829
+##  -0.2250755  0.2062630
 ## sample estimates:
-##         cor 
-## -0.03910853
+##          cor 
+## -0.009865135
 ```
 
 ```r
-plot(q[2:84],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]),
-     xlab="q(1)",ylab="first diff Variance in Test Complexity")
+points(q[sig.extin+1],d.t.var[sig.extin],pch=3,lwd=2,col='red')
+points(q[sig.origin+1],d.t.var[sig.origin],pch=4,lwd=2,col='blue')
 ```
 
 ![](EntireRange_files/figure-html/comparison variance extinction-6.png)<!-- -->
-
-```r
-cor.test(q[2:84],diff(time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]))
-```
-
-```
-## 
-## 	Pearson's product-moment correlation
-## 
-## data:  q[2:84] and diff(time.var(test.complex.index, morph$origin, morph$extin, q[2:84] and     timeresolution.dataframe)[1:84, 2])
-## t = 0.088791, df = 81, p-value = 0.9295
-## alternative hypothesis: true correlation is not equal to 0
-## 95 percent confidence interval:
-##  -0.2062630  0.2250755
-## sample estimates:
-##         cor 
-## 0.009865135
-```
 There is no correlation between q or p in the variance in test complexity. Additionally, one might suspect that the change in variance (like the end Cretaceous) would be correlated with elevated p or q. This is not the case. Variance in test complexity is not synchronous with the macroevolutionary rates at the species-, genus-, or family-levels. p values are also crap.
 
 
@@ -463,8 +484,13 @@ plot(0,0,
      ylim=c(min(temp[,2],na.rm=T),
             max(temp[,2],na.rm=T))
   )
-  lines(temp[,1],temp[,2],lwd=3,col='blue')
-lines(midstage,occurtot/5,col='black',lwd=2)
+  lines(temp[,1],temp[,2],lwd=3,col='grey')
+lines(midstage,occurtot/5,col='grey70',lwd=1)
+which(timeresolution.dataframe$sig.origin == 'y')->sig.origin
+which(timeresolution.dataframe$sig.extin == 'y')->sig.extin
+
+points(temp[sig.extin,1],temp[sig.extin,2],pch=3,lwd=2,col='red')
+points(temp[sig.origin,1],temp[sig.origin,2],pch=4,lwd=2,col='blue')
 ```
 
 ![](EntireRange_files/figure-html/variance v div-1.png)<!-- -->
@@ -472,39 +498,139 @@ lines(midstage,occurtot/5,col='black',lwd=2)
 
 
 ```r
-time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
-plot(timeresolution.dataframe[1:length(diff(temp[,1])),2],
-        diff(temp[,2]),
+time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->tci.var
+
+plot(timeresolution.dataframe[1:length(diff(tci.var[,1])),2],
+        -diff(tci.var[,2]),
      type='p',
      xlim=c(170,0),
      xlab="Time (Ma)",
-     ylab="first diff Variance of Test Complexity",
+     ylab="First Diff. of TCI Variance",
      #ylim=c(-7,7),
      pch=16,
-     col="green"
+     col="grey"
   )
-  abline(v=c(23,34,55,65.5))
+
+points(timeresolution.dataframe[1:length(diff(tci.var[,1])),2][sig.extin],
+       -diff(tci.var[,2])[sig.extin],pch=3,lwd=2,col='red')
+rug(-mean(diff(tci.var[,2])[sig.extin]),col='red',lwd=4,side=2)
+points(timeresolution.dataframe[1:length(diff(tci.var[,1])),2][sig.origin],
+       -diff(tci.var[,2])[sig.origin],pch=4,lwd=2,col='blue')
+rug(mean(-diff(tci.var[,2])[sig.origin]),col='blue',side=2,lwd=4)
+abline(h=0)
+abline(v=65.5)
 ```
 
 ![](EntireRange_files/figure-html/diffvariance-1.png)<!-- -->
+mean change of variance at sig extinction 0.6946308
+mean change of variance at sig origination -1.120749
+
+Variance (or its first difference) are uncorrelated to macroevolutionary rates at any taxonomic level. There are, however, indiviudal genus-level extinction rates which appear to connect strongly with substantial drops in variance (~112 Ma, the Aptian Albian boundary, for example).
 
 
 
 ```r
-time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
-plot(0,0,
-     type='n',
+#building randomization process
+
+  #first build was the wrong question. The question is given the 
+  #underlying change is species, is the gain/loss in variance expected?
+iterations<-10000
+rand.var<-matrix(data=NA,
+                 ncol=iterations,
+                 nrow=length(timeresolution.dataframe$end))
+rand.test.complex.index<-NA
+for(i in 1:iterations){
+    sample(test.complex.index,
+           size=length(morph$origin),
+           replace=FALSE)->rand.test.complex.index
+  time.var(rand.test.complex.index, #importantly, the TCI scores don't change, so no need to recalculate these
+           morph$origin,
+           morph$extin,
+           timeresolution.dataframe)[,2]->rand.var[,i]
+  #print(i)
+}
+plot(timeresolution.dataframe$X,rand.var[,1],
+     type='l',
      xlim=c(170,0),
-     xlab="Time (Ma)",
-     ylab="Variance of Test Complexity",
-     ylim=c(min(temp[,2],na.rm=T),
-            max(temp[,2],na.rm=T))
-  )
-  lines(temp[,1],temp[,2],lwd=3,col='blue')
-lines(midstage,-q.genus*20+10,col='red',lwd=2)
-abline()
+     lwd=.1
+)
+for(i in 1:iterations){
+  lines(timeresolution.dataframe$X,rand.var[,i],lwd=.1)
+}
 ```
 
-![](EntireRange_files/figure-html/variance v genus extinction-1.png)<!-- -->
-However, looking at individual timeperiods variance and extinction appear to be connected, most clearly at the genus level
+![](EntireRange_files/figure-html/montecarlo variance-1.png)<!-- -->
 
+```r
+#forming the quantiles
+high.var<-NA
+low.var<-NA
+for(i in 1:length(timeresolution.dataframe$X)){
+  quantile(rand.var[i,],probs=.95,na.rm=T)->high.var[i]
+  quantile(rand.var[i,],probs=.05,na.rm=T)->low.var[i]
+}
+
+plot(timeresolution.dataframe$X,
+     tci.var[,2],
+     type='l',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="TCI Variance",
+     #ylim=c(-7,7),
+     lwd=2,
+     col="grey"
+)
+lines(timeresolution.dataframe$X,high.var)
+lines(timeresolution.dataframe$X,low.var)
+points(timeresolution.dataframe$X[sig.extin],tci.var[sig.extin,2],pch=3,lwd=2,col='red')
+points(timeresolution.dataframe$X[sig.origin],tci.var[sig.origin,2],pch=4,lwd=2,col='blue')
+abline(v=25)
+```
+
+![](EntireRange_files/figure-html/montecarlo variance-2.png)<!-- -->
+This plot is the result of a Monte Carlo analysis. The bounds are the 90% limits of a randomizing the morphologies, but keeping the diversity pattern stable. This shows that there is more variance than a null model a the Santonian, and less through the ~42 Ma to ~25 Ma, much of the later Eocene and Oligocene. This matches qualitative assessments of the Oligocene. The Eocene, however, is usually described as an interval of high diversity, and this prolonged decrease is 
+
+
+```r
+dif.rand.var<-rand.var[1:{length(rand.var[,1])-1},]
+for(i in 1:iterations){
+  diff(rand.var[,i])->dif.rand.var[,i]
+}
+high.dif.var<-NA
+low.dif.var<-NA
+for(i in 1:length(dif.rand.var[,1])){
+  quantile(dif.rand.var[i,],probs=.95,na.rm=T)->high.dif.var[i]
+  quantile(dif.rand.var[i,],probs=.05,na.rm=T)->low.dif.var[i]
+}
+
+plot(timeresolution.dataframe[1:length(diff(tci.var[,1])),3],
+        -diff(tci.var[,2]),
+     type='p',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="First Diff. of TCI Variance",
+     #ylim=c(-7,7),
+     pch=16,
+     col="grey"
+  )
+
+points(timeresolution.dataframe[1:length(diff(tci.var[,1])),3][sig.extin],
+       -diff(tci.var[,2])[sig.extin],pch=3,lwd=2,col='red')
+rug(-mean(diff(tci.var[,2])[sig.extin]),col='red',lwd=4,side=2)
+points(timeresolution.dataframe[1:length(diff(tci.var[,1])),3][sig.origin],
+       -diff(tci.var[,2])[sig.origin],pch=4,lwd=2,col='blue')
+rug(mean(-diff(tci.var[,2])[sig.origin]),col='blue',side=2,lwd=4)
+abline(h=0)
+abline(v=65.5)
+lines(timeresolution.dataframe[1:length(diff(tci.var[,1])),3],high.dif.var)
+lines(timeresolution.dataframe[1:length(diff(tci.var[,1])),3],low.dif.var)
+```
+
+![](EntireRange_files/figure-html/montecarlo firstdiff-1.png)<!-- -->
+
+This plot depicts the ~90% confidence envelope for a significant change in variance, keeping originations and extinctions as observed from fossil data. It depicts substantial swings in variance associated with the end of OAE1d, and a loss of variance coincident with the early Campanian. The Cenozoic is limited in significant changes, with only the midMiocene Climatic Optimum as a signficant increase and decrease. 
+
+Significantly low variance: late Eocene & Oligocene (*Sustained*)
+Signficantly high variance: Santonian
+Significantly high increase in variance: early Turonian (OAE2?), MMCO
+Significantly high decrease in varaince: late Turonian, early Campanian, MMCO,
