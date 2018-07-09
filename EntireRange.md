@@ -257,6 +257,25 @@ Test complexity is constructed by standardizing the values within each parameter
 
 
 ```r
+morph$family->family.ID
+range.line.plot(test.complex.index,
+                "Test Complexity Index",
+                family.ID,
+                morph$origin,
+                morph$extin
+                )
+lines(time.mean(test.complex.index,morph$origin,morph$extin,1),lwd=2)
+lines(time.median(test.complex.index,morph$origin,morph$extin,1),lwd=2,col="red")
+```
+
+![](EntireRange_files/figure-html/TCI family-1.png)<!-- -->
+
+```r
+  time.var(test.complex.index,morph$origin,morph$extin,1)->temp
+```
+
+
+```r
 time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
 plot(0,0,
      type='n',
@@ -588,7 +607,7 @@ abline(v=25)
 ```
 
 ![](EntireRange_files/figure-html/montecarlo variance-2.png)<!-- -->
-This plot is the result of a Monte Carlo analysis. The bounds are the 90% limits of a randomizing the morphologies, but keeping the diversity pattern stable. This shows that there is more variance than a null model a the Santonian, and less through the ~42 Ma to ~25 Ma, much of the later Eocene and Oligocene. This matches qualitative assessments of the Oligocene. The Eocene, however, is usually described as an interval of high diversity, and this prolonged decrease is 
+This plot is the result of a Monte Carlo analysis examining what a significantly high or low variance is. The bounds are the 90% limits of a randomizing the morphologies, but keeping the diversity pattern stable. This shows that there is more variance than a null model a the Santonian, and less through the ~42 Ma to ~25 Ma, much of the later Eocene and Oligocene. This matches qualitative assessments of the Oligocene. The Eocene, however, is usually described as an interval of high diversity, and this prolonged decrease is 
 
 
 ```r
@@ -628,9 +647,14 @@ lines(timeresolution.dataframe[1:length(diff(tci.var[,1])),3],low.dif.var)
 
 ![](EntireRange_files/figure-html/montecarlo firstdiff-1.png)<!-- -->
 
-This plot depicts the ~90% confidence envelope for a significant change in variance, keeping originations and extinctions as observed from fossil data. It depicts substantial swings in variance associated with the end of OAE1d, and a loss of variance coincident with the early Campanian. The Cenozoic is limited in significant changes, with only the midMiocene Climatic Optimum as a signficant increase and decrease. 
+This plot depicts the ~90% confidence envelope for a significant change in variance, keeping originations and extinctions as observed from fossil data. It depicts significant increases in variance associated with the end of OAE1d and the Aptian (OAE1a), and a loss of variance coincident with the early Campanian. The Cenozoic is limited in significant changes, with only the mid. Miocene Climatic Optimum as a signficant increase and decrease. 
 
-Significantly low variance: late Eocene & Oligocene (*Sustained*)
+Significantly low variance: late Eocene & Oligocene (_Sustained_)
+
 Signficantly high variance: Santonian
-Significantly high increase in variance: early Turonian (OAE2?), MMCO
-Significantly high decrease in varaince: late Turonian, early Campanian, MMCO,
+
+Significantly high increase in variance: Aptian (OAE1a?), early Turonian (OAE2?), MMCO
+
+Significantly high decrease in varaince: late Turonian, early Campanian, MMCO
+
+We assume here no relationship between the extant morpholgy and new species (meaning that the stochastic variance is likely too high), 
