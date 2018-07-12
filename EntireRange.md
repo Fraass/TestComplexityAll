@@ -658,3 +658,172 @@ Significantly high increase in variance: Aptian (OAE1a?), early Turonian (OAE2?)
 Significantly high decrease in varaince: late Turonian, early Campanian, MMCO
 
 We assume here no relationship between the extant morpholgy and new species (meaning that the stochastic variance is likely too high), 
+
+
+
+# further experiments
+
+```r
+genus.tci<-matrix(NA,nrow=length(timeresolution.dataframe$X),ncol={length(unique(morph$genus))+1})
+as.data.frame(genus.tci)->genus.tci
+genus.tci[,1]<-timeresolution.dataframe$X
+as.character(unique(morph$genus))->colnames(genus.tci)[2:{length(unique(morph$genus))+1}]
+colnames(genus.tci)[1]<-'midstage'
+species.in.genus<-NA
+for(i in unique(morph$genus)){
+  which(morph$genus == i)->species.in.genus
+  time.mean(test.complex.index[species.in.genus],
+            morph$origin[species.in.genus],
+            morph$extin[species.in.genus],
+            timeresolution.dataframe)[,2]->genus.tci[,i]
+
+  }
+rm(species.in.genus)
+
+plot(genus.tci[,1],
+     genus.tci[,2],
+     xlim=c(170,0),
+     ylim=c(min(genus.tci[,2:{length(unique(morph$genus))+1}],na.rm=T),
+            max(genus.tci[,2:{length(unique(morph$genus))+1}],na.rm=T)),
+     type='l')
+sample(colors(),{length(unique(morph$genus))+1})->genus.color
+for(i in unique(morph$genus)){
+  
+  lines(genus.tci[,1],
+        genus.tci[,i],
+        col = genus.color[which(colnames(genus.tci) == i)])
+  }
+```
+
+![](EntireRange_files/figure-html/genus TCI-1.png)<!-- -->
+
+Plot of the changes in TCI within a genus through time. each Genus is a unique color.
+
+
+```r
+plot(#genus.tci[,1],
+     rev(na.omit(genus.tci[,2])),
+     xlim=c(40,0),
+     ylim=c(min(genus.tci[,2:{length(unique(morph$genus))+1}],na.rm=T),
+            max(genus.tci[,2:{length(unique(morph$genus))+1}],na.rm=T)),
+     type='l')
+sample(colors(),{length(unique(morph$genus))+1})->genus.color
+for(i in unique(morph$genus)){
+  
+  lines(#genus.tci[,1],
+        rev(na.omit(genus.tci[,i])),
+        col = genus.color[which(colnames(genus.tci) == i)])
+}
+genus.tci.naomit<-genus.tci[,2:length(genus.tci[1,])]
+for(i in 1:length(genus.tci.naomit[1,])){
+  rev(genus.tci.naomit[!is.na(genus.tci.naomit[,i]),i])->holding.obj
+  rep(NA,length(genus.tci.naomit[,i]))->genus.tci.naomit[,i]
+  c(holding.obj,
+    rep(NA,length(genus.tci.naomit[,i])-length(holding.obj))
+    )->genus.tci.naomit[,i]
+}
+lines(rowMeans(genus.tci.naomit,na.rm=T),lwd=3)
+```
+
+![](EntireRange_files/figure-html/within genus TCI 2-1.png)<!-- -->
+plot of the mean TCI scores for a genus through time, putting the start for each genus at 0. Average is pretty steady.
+
+
+```r
+genus.tci.naomit<-genus.tci[,2:length(genus.tci[1,])]
+for(i in 1:length(genus.tci.naomit[1,])){
+  rev(genus.tci.naomit[!is.na(genus.tci.naomit[,i]),i])->holding.obj
+  rep(NA,length(genus.tci.naomit[,i]))->genus.tci.naomit[,i]
+  c(holding.obj,
+    rep(NA,length(genus.tci.naomit[,i])-length(holding.obj))
+  )->genus.tci.naomit[,i]
+  
+  genus.tci.naomit[,i]-genus.tci.naomit[1,i]->genus.tci.naomit[,i]
+}
+
+
+plot(#genus.tci[,1],
+  na.omit(genus.tci.naomit[,2]),
+  xlim=c(40,0),
+  ylim=c(-15,
+         15),
+  type='l')
+sample(colors(),{length(unique(morph$genus))+1})->genus.color
+for(i in unique(morph$genus)){
+  
+  lines(#genus.tci[,1],
+    na.omit(genus.tci.naomit[,i]),
+    col = genus.color[which(colnames(genus.tci) == i)])
+}
+lines(rowMeans(genus.tci.naomit,na.rm=T),lwd=3)
+#plot of the mean TCI scores for a genus through time. Average is pretty steady.
+abline(h=0)
+```
+
+![](EntireRange_files/figure-html/genus TCI 3-1.png)<!-- -->
+change from initial morphology through time. 
+
+
+```r
+resolution<-0.1
+genus.tci<-matrix(NA,
+                  nrow=length(time.mean(test.complex.index,
+            morph$origin,
+            morph$extin,
+            resolution)[,1]
+            ),ncol={length(unique(morph$genus))+1})
+as.data.frame(genus.tci)->genus.tci
+as.character(unique(morph$genus))->colnames(genus.tci)[2:{length(unique(morph$genus))+1}]
+colnames(genus.tci)[1]<-'midstage'
+species.in.genus<-NA
+time.mean(test.complex.index,
+            morph$origin,
+            morph$extin,
+            0.1)[,1]->genus.tci[,1]
+
+for(i in unique(morph$genus)){
+  which(morph$genus == i)->species.in.genus
+  time.mean(test.complex.index[species.in.genus],
+            morph$origin[species.in.genus],
+            morph$extin[species.in.genus],
+            resolution)->holding.obj
+  holding.obj[,2]-holding.obj[2,2]->holding.obj[,2]
+  which(round(holding.obj[1,1],digits=1) == round(genus.tci[,1],digits=1))->start
+  genus.tci[start:{start+length(holding.obj[,2])-1},i]<-holding.obj[,2]
+}
+
+
+rm(species.in.genus)
+
+plot(genus.tci[,1],
+     genus.tci[,2],
+     xlim=c(170,0),
+     ylim=c(min(genus.tci[,2:{length(unique(morph$genus))+1}],na.rm=T),
+            max(genus.tci[,2:{length(unique(morph$genus))+1}],na.rm=T)),
+     type='l')
+sample(colors(),{length(unique(morph$genus))+1})->genus.color
+for(i in unique(morph$genus)){
+  
+  lines(genus.tci[,1],
+        genus.tci[,i],
+        col = genus.color[which(colnames(genus.tci) == i)])
+  }
+```
+
+![](EntireRange_files/figure-html/genus TCI 4-1.png)<!-- -->
+
+```r
+genus.tci.naomit<-genus.tci[,2:length(genus.tci[1,])]
+for(i in 1:length(genus.tci.naomit[1,])){
+  genus.tci.naomit[!is.na(genus.tci.naomit[,i]),i]->holding.obj
+  rep(NA,length(genus.tci.naomit[,i]))->genus.tci.naomit[,i]
+  c(holding.obj,
+    rep(NA,length(genus.tci.naomit[,i])-length(holding.obj))
+  )->genus.tci.naomit[,i]
+  
+  genus.tci.naomit[,i]-genus.tci.naomit[1,i]->genus.tci.naomit[,i]
+}
+```
+
+
+
