@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 require(RCurl)
 
 read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/MasterList%20(vstat%201.05).csv?token=ARrUXds6yZTAACMYheFYdBw0AMAm5Ud-ks5b7Y2cwA%3D%3D"),header=T)->foram.dataframe
-         
+morph<-foram.dataframe#[,13:36]
 "%w/o%" <- function(x, y) x[!x %in% y] #--  x without y
 
 #foram.dataframe[,13:36] are all the morph variables
@@ -862,8 +862,7 @@ plot(0,0,
      type='n',
      xlim=c(170,0),
      #xlim=c(80,50),
-     ylim=c(0,
-            80),
+     ylim=c(0,80),
      xlab='Time (Ma)',
      ylab="Diversity")
 #axis(side=2,at=seq(0,800,by=5))
