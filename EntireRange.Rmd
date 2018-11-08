@@ -9,9 +9,10 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-read.csv(file="/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/MasterList (vstat 1.05).csv",header=TRUE)->foram.dataframe
-foram.dataframe->morph
+require(RCurl)
 
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/MasterList%20(vstat%201.05).csv?token=ARrUXds6yZTAACMYheFYdBw0AMAm5Ud-ks5b7Y2cwA%3D%3D"),header=T)->foram.dataframe
+         
 "%w/o%" <- function(x, y) x[!x %in% y] #--  x without y
 
 #foram.dataframe[,13:36] are all the morph variables
@@ -206,27 +207,31 @@ rowSums(normalized.foram[,13:36])/22->test.complex.index
 ## What follows is relic code from ~2009 when I was an even worse programmer. My apologizes, but i'm not rewriting this shit at this point. It works well enough.
 attach(foram.dataframe)
 #wanted age model reference
-read.table(file="/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/Time Resolution/Zone scheme.csv" ,header=TRUE,sep=",")->timeresolution.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Zone%20scheme.csv?token=ARrUXRf4jlfHuuIqnqEhduz-DfAzuL75ks5b7Y-BwA%3D%3D"),header=T)->timeresolution.dataframe
+
 attach(timeresolution.dataframe)
-#pca
-read.table(file="/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/pca.morph.csv",header=TRUE,sep= ",")->pca.dataframe
-attach(pca.dataframe)
+
 #periods
-read.table(file="/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/Time Resolution/Periods.csv",header=TRUE,sep= ",")->hist.bin.dataframe
+
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Periods.csv?token=ARrUXZUwxHEGX7ft1S5hq2u7IULuoIQRks5b7Y_pwA%3D%3D"),header=T)->hist.bin.dataframe
+
+
 attach(hist.bin.dataframe)
 #OAEs
-read.table(file="/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/OAEs.csv",header=TRUE,sep= ",")->OAEs.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/OAEs.csv?token=ARrUXUu5EZPctC469Wj8oxGn1uW7Nai_ks5b7ZBPwA%3D%3D"),header=T)->OAEs.dataframe
 attach(OAEs.dataframe)
 
-read.table(file= "/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/Genus Abbr key.csv",header=TRUE,sep=",")->Abbr.dataframe
+#Abbrieviations
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Genus%20Abbr%20key.csv?token=ARrUXW9-Z4MxdWtBmof1H3_L9XMqEkDbks5b7ZCgwA%3D%3D"),header=T)->Abbr.dataframe
 attach(Abbr.dataframe)
-read.table(file= "/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/Genus Abbr key ordered.csv",header=TRUE,sep=",")->sAbbr.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Genus%20Abbr%20key%20ordered.csv?token=ARrUXc3d0BRBKDlV5OUShsWEuvgg1purks5b7ZDBwA%3D%3D"),header=T)->sAbbr.dataframe
 attach(sAbbr.dataframe)
-read.table(file= "/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/Family Abbr key.csv",header=TRUE,sep=",")->Abbr.family.dataframe
+
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Family%20Abbr%20key.csv?token=ARrUXSqkHYAZGS0S7jJ-e0FXj7j7QBrOks5b7ZFOwA%3D%3D"),header=T)->Abbr.family.dataframe
 attach(Abbr.family.dataframe)
 
 
-names(foram.dataframe);names(timeresolution.dataframe);names(pca.dataframe);names(hist.bin.dataframe);names(OAEs.dataframe);
+names(foram.dataframe);names(timeresolution.dataframe);names(hist.bin.dataframe);names(OAEs.dataframe);
 library(vegan)
 {timeresolution.dataframe$end+timeresolution.dataframe$start}/2->timeresolution.dataframe[,3]
 
@@ -834,7 +839,7 @@ q[which(is.infinite(q))]<-100
 q[which(is.nan(q))]<-0
 
 #and now because I was so bad at datamanagement, I have a lot of spare objects to remove & detach.
-detach(foram.dataframe);detach(pca.dataframe);detach(hist.bin.dataframe)
+detach(foram.dataframe);detach(hist.bin.dataframe)
 detach(OAEs.dataframe);detach(Abbr.dataframe);detach(sAbbr.dataframe);detach(Abbr.family.dataframe)
 rm(a)
 rm(A)
