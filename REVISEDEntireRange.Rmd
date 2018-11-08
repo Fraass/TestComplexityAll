@@ -1,0 +1,1613 @@
+---
+title: "Entire Range Test Complexity"
+author: "Fraass"
+date: "7/4/2018"
+output:
+  pdf_document: default
+  html_document:
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+read.csv(file="/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/MasterList (vstat 1.05).csv",header=TRUE)->foram.dataframe
+foram.dataframe->morph
+
+"%w/o%" <- function(x, y) x[!x %in% y] #--  x without y
+
+#foram.dataframe[,13:36] are all the morph variables
+time.mean<-function(data,origin,extin,resolution=0.1){
+ if(length(resolution) == 1){
+   max.time<-max(origin)
+   min.time<-min(extin)
+   seq(to=max.time,from=min.time,by=resolution)->t
+   cbind(t,rep(NA,times=length(t)))->output
+ }
+  if(length(resolution) > 1){
+    resolution[,2]->t
+    cbind(resolution[,3],rep(NA,times=length(t)))->output
+  }
+  for(i in 1:length(t)){
+    mean(data[which(origin > t[i] & extin < t[i])],na.rm=T)->output[i,2]
+  }
+  return(output)
+}
+time.div<-function(data,origin,extin,resolution=0.1){
+ if(length(resolution) == 1){
+   max.time<-max(origin)
+   min.time<-min(extin)
+   seq(to=max.time,from=min.time,by=resolution)->t
+   cbind(t,rep(NA,times=length(t)))->output
+ }
+  if(length(resolution) > 1){
+    resolution[,2]->t
+    cbind(resolution[,3],rep(NA,times=length(t)))->output
+  }
+  for(i in 1:length(t)){
+    length(test.complex.index[which(origin > t[i] & extin < t[i])])->output[i,2]
+    output[i,2]-1->output[i,2]
+    }
+  return(output)
+}
+time.median<-function(data,origin,extin,resolution=0.1){
+ if(length(resolution) == 1){
+   max.time<-max(origin)
+   min.time<-min(extin)
+   seq(to=max.time,from=min.time,by=resolution)->t
+   cbind(t,rep(NA,times=length(t)))->output
+ }
+  if(length(resolution) > 1){
+    resolution[,2]->t
+    cbind(resolution[,3],rep(NA,times=length(t)))->output
+  }
+  for(i in 1:length(t)){
+    median(data[which(origin > t[i] & extin < t[i])],na.rm=T)->output[i,2]
+  }
+  return(output)
+}
+time.var<-function(data,origin,extin,resolution=0.1){
+ if(length(resolution) == 1){
+   max.time<-max(origin)
+   min.time<-min(extin)
+   seq(to=max.time,from=min.time,by=resolution)->t
+   cbind(t,rep(NA,times=length(t)))->output
+ }
+  if(length(resolution) > 1){
+    resolution[,2]->t
+    cbind(resolution[,3],rep(NA,times=length(t)))->output
+  }
+  for(i in 1:length(t)){
+    var(data[which(origin > t[i] & extin < t[i])],na.rm=T)->output[i,2]
+  }
+  return(output)
+}
+library(vegan)
+library(RColorBrewer)
+library(vioplot)
+range.line.plot<-function(var.A,y.axis.label,family.ID,origin,extin){
+  #Setting the spacer to make the vioplots visible
+  spacer<-4.5
+  #setting colors
+  #these are based on the colors set in the other function (vioplot.pca)
+  c(brewer.pal(12,'Set3'),brewer.pal(8,"Set2"),brewer.pal(9,'Set1'),'black','grey','black','brown')->col.temp
+  fam.col<-rep(NA,length(family.ID))
+  droplevels(family.ID)->family.ID
+  col.code<-rep(NA,times=length(levels(family.ID)))
+  for(i in 1:length(levels(family.ID))){
+    levels(family.ID)[i]->temp.ID
+    if(temp.ID == "Candeinidae"){col.code[i]<-1}
+    if(temp.ID == "Cassigerinellidae"){col.code[i]<-3}
+    if(temp.ID == "Chiloguembelinidae"){col.code[i]<-4}
+    if(temp.ID == "Favusellidae"){col.code[i]<-5}
+    if(temp.ID == "Globigerinelloididae"){col.code[i]<-6}
+    if(temp.ID == "Globigerinidae"){col.code[i]<-7}
+    if(temp.ID == "Globoquadrinidae"){col.code[i]<-8}
+    if(temp.ID == "Globorotaliidae"){col.code[i]<-9}
+    if(temp.ID == "Globotruncanidae"){col.code[i]<-10}
+    if(temp.ID == "Globuligerinidae"){col.code[i]<-11}
+    if(temp.ID == "Guembelitriidae"){col.code[i]<-13}
+    if(temp.ID == "Hantkeninidae"){col.code[i]<-14}
+    if(temp.ID == "Hastigerinidae"){col.code[i]<-15}
+    if(temp.ID == "Hedbergellidae"){col.code[i]<-16}
+    if(temp.ID == "Heterohelicidae"){col.code[i]<-19}
+    if(temp.ID == "Planomalinidae"){col.code[i]<-21}
+    if(temp.ID == "Rotaliporidae"){col.code[i]<-22}
+    if(temp.ID == "Rugoglobigerinidae"){col.code[i]<-23}
+    if(temp.ID == "Schackoinidae"){col.code[i]<-27}
+    if(temp.ID == "Truncorotaloididae"){col.code[i]<-31}
+    if(temp.ID == "UNKNOWN"){col.code[i]<-32}
+    if(temp.ID == "Paraticinellinae"){col.code[i]<-33}
+  }
+  col.key<-cbind(levels(family.ID),col.code) #col.key is now a 2-col obj with family (c1) and color.index (c2)
+  for(i in 1:nrow(col.key)){
+    col.key[i,2]<-col.temp[as.numeric(col.key[i,2])]
+  }
+  1->counter
+  for(i in levels(family.ID)){ #This portion takes colkey and subs in the color value from RColorBrewer
+    fam.col[which(family.ID == i)]<-col.key[which(col.key[,1] == i),2]
+    counter+1->counter
+  }
+  plot(0,0,type='n',
+       xlim=c(max(as.vector(origin),na.rm=T),-{spacer*length(levels(family.ID))*.9}),
+       ylim=c(min(var.A,na.rm=T),max(var.A,na.rm=T)),
+       ylab=paste(y.axis.label),
+       xlab='Time (Ma)'
+  )
+  1->counter
+  aggregate(var.A,by=list(family.ID),FUN=median,na.rm=T)->a.order
+  order(a.order[,2])->a.order.1
+  a.order[a.order.1,1]->a.order#setting an order for the vioplots
+  for(i in a.order){
+    if(all(is.na(var.A[which(family.ID == i)])) != T){
+      segments(as.vector(origin[which(family.ID == i)]),
+               var.A[which(family.ID == i)],
+               as.vector(extin[which(family.ID == i)]),
+               var.A[which(family.ID == i)],
+               col=col.key[which(col.key[,1] == i),2],
+               lwd=2
+      )
+      vioplot(na.omit(var.A[which(family.ID == i)]),
+              horizontal=F,
+              at=-{counter-0.5}*spacer,
+              add=T,
+              border=F,
+              col=col.key[which(col.key[,1] == i),2],
+              wex=spacer,
+              na.rm=T)
+      text(-{counter-0.5}*spacer,
+           -10,
+           labels=i,
+           col=col.key[which(col.key[,1] == i),2],
+           srt=90
+           
+      )
+    }
+    counter+1->counter
+  }
+}
+
+#constructing a genus-level origin/extin table
+  unique(foram.dataframe$genus)->genus.set
+  as.data.frame(genus.set,col.names=c('genus','origin','extin'))->genus.dataframe
+  cbind(genus.dataframe,rep(NA,length(genus.set)))->genus.dataframe
+  cbind(genus.dataframe,rep(NA,length(genus.set)))->genus.dataframe
+  names(genus.dataframe)<-c('genus','origin','extin')
+  
+  for(i in 1:length(genus.set)){
+    which(foram.dataframe$genus == genus.dataframe$genus[i])->genus.working
+    max(foram.dataframe$origin[genus.working])->genus.dataframe$origin[i]
+    min(foram.dataframe$extin[genus.working])->genus.dataframe$extin[i]
+  }
+#constructing a family-level origin/extin table
+  unique(foram.dataframe$family)->family.set
+  as.data.frame(family.set,col.names=c('family','origin','extin'))->family.dataframe
+  cbind(family.dataframe,rep(NA,length(family.set)))->family.dataframe
+  cbind(family.dataframe,rep(NA,length(family.set)))->family.dataframe
+  names(family.dataframe)<-c('family','origin','extin')
+  
+  for(i in 1:length(family.set)){
+    which(foram.dataframe$family == family.dataframe$family[i])->family.working
+    max(foram.dataframe$origin[family.working])->family.dataframe$origin[i]
+    min(foram.dataframe$extin[family.working])->family.dataframe$extin[i]
+  }
+
+  rm(family.set);rm(genus.set)
+  
+  
+#this is not where I'm making the test complexity index. Some of the code above is shoddily written, so I need to generate that object here but then recreate it later where it actually makes sense in the rundown file. Oh well, it's like I'm self taught.
+
+foram.dataframe->normalized.foram
+
+#normalization process (using 'vegan' decostand, method=range)
+for(i in 13:36){
+  decostand(normalized.foram[,i],method= 'range',margin=2,na.rm=T)->normalized.foram[,i]
+}
+#making the index
+rowSums(normalized.foram[,13:36])/22->test.complex.index
+## What follows is relic code from ~2009 when I was an even worse programmer. My apologizes, but i'm not rewriting this shit at this point. It works well enough.
+attach(foram.dataframe)
+#wanted age model reference
+read.table(file="/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/Time Resolution/Zone scheme.csv" ,header=TRUE,sep=",")->timeresolution.dataframe
+attach(timeresolution.dataframe)
+#pca
+read.table(file="/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/pca.morph.csv",header=TRUE,sep= ",")->pca.dataframe
+attach(pca.dataframe)
+#periods
+read.table(file="/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/Time Resolution/Periods.csv",header=TRUE,sep= ",")->hist.bin.dataframe
+attach(hist.bin.dataframe)
+#OAEs
+read.table(file="/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/OAEs.csv",header=TRUE,sep= ",")->OAEs.dataframe
+attach(OAEs.dataframe)
+
+read.table(file= "/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/Genus Abbr key.csv",header=TRUE,sep=",")->Abbr.dataframe
+attach(Abbr.dataframe)
+read.table(file= "/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/Genus Abbr key ordered.csv",header=TRUE,sep=",")->sAbbr.dataframe
+attach(sAbbr.dataframe)
+read.table(file= "/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/Family Abbr key.csv",header=TRUE,sep=",")->Abbr.family.dataframe
+attach(Abbr.family.dataframe)
+
+
+names(foram.dataframe);names(timeresolution.dataframe);names(pca.dataframe);names(hist.bin.dataframe);names(OAEs.dataframe);
+library(vegan)
+{timeresolution.dataframe$end+timeresolution.dataframe$start}/2->timeresolution.dataframe[,3]
+
+
+#FUNCTIONS
+#object creation
+a<-0;b<-0;c<-0;d<-0;A<-0;B<-0;C<-0;D<-0;stage<-0;occura<-0;occurb<-0;occurc<-0;occurd<-0;occura.genus<-0;occurb.genus<-0;occurc.genus<-0;occurd.genus<-0;occura.family<-0;occurb.family<-0;occurc.family<-0;occurd.family<-0;occurtot.genus<-0;occurtot.family<-0; contentsa.family.obj<-0; contentsb.family.obj<-0; contentsc.family.obj<-0; contentsd.family.obj<-0; contentstot.family.obj<-0;extin.family<-0;origin.family<-0;extin.genus<-0;origin.genus<-0;
+
+
+midstage<-((end+start)/2)
+
+
+#Diversity (Computes stage/zone total diversity)
+
+diversity<-function(end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  a<-ifelse(origin > end & origin <= start & extin < end , 1 , 0)
+  b<-ifelse(extin < start & extin >= end & origin > start , 1 , 0)
+  c<-ifelse(extin >= end & origin <= start , 1, 0 )
+  d<-ifelse(origin > start & extin < end , 1, 0 )
+  #removing species not present
+  A<-a[a>.5]
+  B<-b[b>.5]
+  C<-c[c>.5]
+  D<-d[d>.5]
+  #changing multiple vectors to a single number of occurrences
+  a<-length(A)
+  b<-length(B)
+  c<-length(C)
+  d<-length(D)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  stage<-ifelse ( end < start, (a+b+c+d), 0)
+  #test if entered correctly
+  stage
+}
+
+#Zscore
+zscore<-function(x){(x-mean(x))/(sd(x))}
+
+
+#Individual Diversity Functions (Range through, Range Crosser, etc.)
+
+diversitya<-function(end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  a<-ifelse(origin > end & origin <= start & extin < end , 1 , 0)
+  #removing species not present
+  A<-a[a>.5]
+  #changing multiple vectors to a single number of occurrences
+  a<-length(A)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  a
+}
+
+diversityb<-function(end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  b<-ifelse(extin < start & extin >= end & origin > start , 1 , 0)
+  #removing species not present
+  B<-b[b>.5]
+  #changing multiple vectors to a single number of occurrences
+  b<-length(B)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  b
+}
+
+diversityc<-function(end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  c<-ifelse(extin >= end & origin <= start , 1, 0 )
+  #removing species not present
+  C<-c[c>.5]
+  #changing multiple vectors to a single number of occurrences
+  c<-length(C)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  c
+}
+
+diversityd<-function(end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  d<-ifelse(origin > start & extin < end , 1, 0 )
+  #removing species not present
+  D<-d[d>.5]
+  #changing multiple vectors to a single number of occurrences
+  d<-length(D)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  d
+}
+
+
+
+
+
+#Individual Genus Contents Functions (Range through, Range Crosser, etc.)
+
+contentsa.genus<-function(genus.name,end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  a<-ifelse(genus ==  genus.name  & origin > end & origin <= start & extin < end , 1 , 0)
+  #removing species not present
+  A<-a[a>.5]
+  #changing multiple vectors to a single number of occurrences
+  a<-length(A)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  a
+}
+
+contentsb.genus<-function(genus.name,end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  b<-ifelse(genus == genus.name & extin < start & extin >= end & origin > start , 1 , 0)
+  #removing species not present
+  B<-b[b>.5]
+  #changing multiple vectors to a single number of occurrences
+  b<-length(B)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  b
+}
+
+contentsc.genus<-function(genus.name, end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  c<-ifelse(genus == genus.name & extin >= end & origin <= start , 1, 0 )
+  #removing species not present
+  C<-c[c>.5]
+  #changing multiple vectors to a single number of occurrences
+  c<-length(C)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  c
+}
+
+contentsd.genus<-function(genus.name, end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  d<-ifelse(genus == genus.name & origin > start & extin < end , 1, 0 )
+  #removing species not present
+  D<-d[d>.5]
+  #changing multiple vectors to a single number of occurrences
+  d<-length(D)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  d
+}
+contents.genus<-function(genus.name){
+  for(i in 1:length(start)){contentsa.genus.obj[[i]]=contentsa.genus(genus.name,end[[i]],start[[i]],origin,extin)};
+  for(i in 1:length(start)){contentsb.genus.obj[[i]]=contentsb.genus(genus.name,end[[i]],start[[i]],origin,extin)};
+  for(i in 1:length(start)){contentsc.genus.obj[[i]]=contentsc.genus(genus.name,end[[i]],start[[i]],origin,extin)};
+  for(i in 1:length(start)){contentsd.genus.obj[[i]]=contentsd.genus(genus.name,end[[i]],start[[i]],origin,extin)};
+  contentstot.genus<-(contentsa.genus.obj+contentsb.genus.obj+contentsc.genus.obj+contentsd.genus.obj);
+  contentstot.genus}
+
+
+
+
+
+contentsa.genus.obj<-0;contentsb.genus.obj<-0;contentsc.genus.obj<-0;contentsd.genus.obj<-0;contentstot.genus<-0;
+
+
+#Individual Family Contents Functions (Range through, Range Crosser, etc.)
+
+contentsa.family<-function(family.name,end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  a<-ifelse(family ==  family.name  & origin > end & origin <= start & extin < end , 1 , 0)
+  #removing species not present
+  A<-a[a>.5]
+  #changing multiple vectors to a single number of occurrences
+  a<-length(A)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  a
+}
+
+contentsb.family<-function(family.name,end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  b<-ifelse(family == family.name & extin < start & extin >= end & origin > start , 1 , 0)
+  #removing species not present
+  B<-b[b>.5]
+  #changing multiple vectors to a single number of occurrences
+  b<-length(B)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  b
+}
+
+contentsc.family<-function(family.name, end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  c<-ifelse(family == family.name & extin >= end & origin <= start , 1, 0 )
+  #removing species not present
+  C<-c[c>.5]
+  #changing multiple vectors to a single number of occurrences
+  c<-length(C)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  c
+}
+
+contentsd.family<-function(family.name, end,start,origin,extin)
+{
+  #sub in the start/end date for the stage/zone
+  d<-ifelse(family == family.name & origin > start & extin < end , 1, 0 )
+  #removing species not present
+  D<-d[d>.5]
+  #changing multiple vectors to a single number of occurrences
+  d<-length(D)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  d
+}
+contents.family<-function(family.name){
+  for(i in 1:length(start)){contentsa.family.obj[[i]]=contentsa.family(family.name,end[[i]],start[[i]],origin,extin)};
+  for(i in 1:length(start)){contentsb.family.obj[[i]]=contentsb.family(family.name,end[[i]],start[[i]],origin,extin)};
+  for(i in 1:length(start)){contentsc.family.obj[[i]]=contentsc.family(family.name,end[[i]],start[[i]],origin,extin)};
+  for(i in 1:length(start)){contentsd.family.obj[[i]]=contentsd.family(family.name,end[[i]],start[[i]],origin,extin)};
+  contentstot.family<-(contentsa.family.obj+contentsb.family.obj+contentsc.family.obj+contentsd.family.obj);
+  contentstot.family}
+
+
+
+
+#Individual GENUS Diversity Functions (Range through, Range Crosser, etc.)
+
+diversity.genus.a<-function(end,start,origin.genus,extin.genus)
+{
+  #sub in the start/end date for the stage/zone
+  a<-ifelse(origin.genus > end & origin.genus <= start & extin.genus < end , 1 , 0)
+  #removing species not present
+  A<-a[a>.5]
+  #changing multiple vectors to a single number of occurrences
+  a<-length(A)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  a
+}
+
+diversity.genus.b<-function(end,start,origin.genus,extin.genus)
+{
+  #sub in the start/end date for the stage/zone
+  b<-ifelse(extin.genus < start & extin.genus >= end & origin.genus > start , 1 , 0)
+  #removing species not present
+  B<-b[b>.5]
+  #changing multiple vectors to a single number of occurrences
+  b<-length(B)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  b
+}
+
+diversity.genus.c<-function(end,start,origin.genus,extin.genus)
+{
+  #sub in the start/end date for the stage/zone
+  c<-ifelse(extin.genus >= end & origin.genus <= start , 1, 0 )
+  #removing species not present
+  C<-c[c>.5]
+  #changing multiple vectors to a single number of occurrences
+  c<-length(C)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  c
+}
+
+diversity.genus.d<-function(end,start,origin.genus,extin.genus)
+{
+  #sub in the start/end date for the stage/zone
+  d<-ifelse(origin.genus > start & extin.genus < end , 1, 0 )
+  #removing species not present
+  D<-d[d>.5]
+  #changing multiple vectors to a single number of occurrences
+  d<-length(D)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  d
+}
+
+
+diversity.genus<-function(end,start,origin.genus,extin.genus)
+{
+  #sub in the start/end date for the stage/zone
+  a<-ifelse(origin.genus > end & origin.genus <= start & extin.genus < end , 1 , 0)
+  b<-ifelse(extin.genus < start & extin.genus >= end & origin.genus > start , 1 , 0)
+  c<-ifelse(extin.genus >= end & origin.genus <= start , 1, 0 )
+  d<-ifelse(origin.genus > start & extin.genus < end , 1, 0 )
+  #removing species not present
+  A<-a[a>.5]
+  B<-b[b>.5]
+  C<-c[c>.5]
+  D<-d[d>.5]
+  #changing multiple vectors to a single number of occurrences
+  a<-length(A)
+  b<-length(B)
+  c<-length(C)
+  d<-length(D)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  occurtot.genus<-a+b+c+d
+  occurtot.genus}
+
+
+
+diversity.family.a<-function(end,start,origin.family,extin.family)
+{
+  #sub in the start/end date for the stage/zone
+  a<-ifelse(origin.family > end & origin.family <= start & extin.family < end , 1 , 0)
+  #removing species not present
+  A<-a[a>.5]
+  #changing multiple vectors to a single number of occurrences
+  a<-length(A)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  a
+}
+
+diversity.family.b<-function(end,start,origin.family,extin.family)
+{
+  #sub in the start/end date for the stage/zone
+  b<-ifelse(extin.family < start & extin.family >= end & origin.family > start , 1 , 0)
+  #removing species not present
+  B<-b[b>.5]
+  #changing multiple vectors to a single number of occurrences
+  b<-length(B)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  b
+}
+
+diversity.family.c<-function(end,start,origin.family,extin.family)
+{
+  #sub in the start/end date for the stage/zone
+  c<-ifelse(extin.family >= end & origin.family <= start , 1, 0 )
+  #removing species not present
+  C<-c[c>.5]
+  #changing multiple vectors to a single number of occurrences
+  c<-length(C)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  c
+}
+
+diversity.family.d<-function(end,start,origin.family,extin.family)
+{
+  #sub in the start/end date for the stage/zone
+  d<-ifelse(origin.family > start & extin.family < end , 1, 0 )
+  #removing species not present
+  D<-d[d>.5]
+  #changing multiple vectors to a single number of occurrences
+  d<-length(D)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  d
+}
+
+occura.family<-0; occurb.family<-0; occurc.family<-0; occurd.family<-0;occurtot.family<-0
+diversity.family<-function(end,start,origin.family,extin.family)
+{
+  #sub in the start/end date for the stage/zone
+  a<-ifelse(origin.family > end & origin.family <= start & extin.family < end , 1 , 0)
+  b<-ifelse(extin.family < start & extin.family >= end & origin.family > start , 1 , 0)
+  c<-ifelse(extin.family >= end & origin.family <= start , 1, 0 )
+  d<-ifelse(origin.family > start & extin.family < end , 1, 0 )
+  #removing families not present
+  A<-a[a>.5]
+  B<-b[b>.5]
+  C<-c[c>.5]
+  D<-d[d>.5]
+  #changing multiple vectors to a single number of occurrences
+  a<-length(A)
+  b<-length(B)
+  c<-length(C)
+  d<-length(D)
+  #compiling together the number of occurrences in the stage/zone
+  #sub in stage/zone
+  occurtot.family<-a+b+c+d
+  occurtot.family}
+
+"%w/o%" <- function(x,y) x[!x %in% y]
+
+
+
+family.level.contents<-mapply(contents.family,levels(family))
+
+for(i in dimnames(family.level.contents)[[2]]){extin.family[i] <- min(extin[family %in% i])}
+extin.family[2:22]->extin.family
+for(i in dimnames(family.level.contents)[[2]]){origin.family[i] <- max(origin[family %in% i])}
+origin.family[2:22]->origin.family
+family.level.contents->family.level.diversity
+
+for(i in 1:21) {family.level.diversity[min(which(family.level.diversity[,i] > 0)): max(which(family.level.diversity[,i]>0)),i] <- 1}
+
+
+genus.level.contents<-mapply(contents.genus,levels(genus))
+
+
+for(i in dimnames(genus.level.contents)[[2]]){extin.genus[i] <- min(extin[genus %in% i])}
+extin.genus[2:127]->extin.genus
+for(i in dimnames(genus.level.contents)[[2]]){origin.genus[i] <- max(origin[genus %in% i])}
+origin.genus[2:127]->origin.genus
+
+genus.level.contents->genus.level.diversity
+for(i in 1:length(end)){genus.level.diversity[min(which(genus.level.diversity[,i] > 0)) : max(which(genus.level.diversity[,i] > 0)),i] <- 1}
+
+for(i in 1:length(start)){occura.genus[[i]]=diversity.genus.a(end[[i]],start[[i]],origin.genus,extin.genus)};
+for(i in 1:length(start)){occurb.genus[[i]]=diversity.genus.b(end[[i]],start[[i]],origin.genus,extin.genus)};
+for(i in 1:length(start)){occurc.genus[[i]]=diversity.genus.c(end[[i]],start[[i]],origin.genus,extin.genus)};
+for(i in 1:length(start)){occurd.genus[[i]]=diversity.genus.d(end[[i]],start[[i]],origin.genus,extin.genus)};
+
+
+
+
+occura.family<-0; occurb.family<-0; occurc.family<-0; occurd.family<-0;occurtot.family<-0
+for(i in 1:length(start)){occura.family[[i]]=diversity.family.a(end[[i]],start[[i]],origin.family,extin.family)};
+for(i in 1:length(start)){occurb.family[[i]]=diversity.family.b(end[[i]],start[[i]],origin.family,extin.family)};
+for(i in 1:length(start)){occurc.family[[i]]=diversity.family.c(end[[i]],start[[i]],origin.family,extin.family)};
+for(i in 1:length(start)){occurd.family[[i]]=diversity.family.d(end[[i]],start[[i]],origin.family,extin.family)};
+
+occurtot.family<-{occura.family+occurb.family+occurc.family+occurd.family}
+
+
+
+
+
+
+
+
+
+#diversity data gathering code (for range through, range crossers, etc.)
+midstage<-0;occurtot<-0;occura<-0;occurb<-0;occurc<-0;occurd<-0;
+for(i in 1:length(start)){occura[[i]]=diversitya(end[[i]],start[[i]],origin,extin)};
+for(i in 1:length(start)){occurb[[i]]=diversityb(end[[i]],start[[i]],origin,extin)};
+for(i in 1:length(start)){occurc[[i]]=diversityc(end[[i]],start[[i]],origin,extin)};
+for(i in 1:length(start)){occurd[[i]]=diversityd(end[[i]],start[[i]],origin,extin)};
+occurtot<-(occura+occurb+occurc+occurd);
+occurtot
+midstage<-((end+start)/2)
+
+
+#diversity GENUS data gathering code (for range through, range crossers, etc.)
+midstage<-0;occurtot.genus<-0;occura.genus<-0;occurb.genus<-0;occurc.genus<-0;occurd.genus<-0;
+for(i in 1:length(start)){occura.genus[[i]]=diversity.genus.a(end[[i]],start[[i]],origin.genus,extin.genus)};
+for(i in 1:length(start)){occurb.genus[[i]]=diversity.genus.b(end[[i]],start[[i]],origin.genus,extin.genus)};
+for(i in 1:length(start)){occurc.genus[[i]]=diversity.genus.c(end[[i]],start[[i]],origin.genus,extin.genus)};
+for(i in 1:length(start)){occurd.genus[[i]]=diversity.genus.d(end[[i]],start[[i]],origin.genus,extin.genus)};
+occurtot.genus<-(occura.genus+occurb.genus+occurc.genus+occurd.genus);
+occurtot.genus
+midstage<-((end+start)/2)
+
+#Extinction/ Origination Rates
+p<-0;q<-0
+midstage<-0;occurtot<-0;occura<-0;occurb<-0;occurc<-0;occurd<-0;
+for(i in 1:length(start)){occura[[i]]=diversitya(end[[i]],start[[i]],origin,extin)};
+for(i in 1:length(start)){occurb[[i]]=diversityb(end[[i]],start[[i]],origin,extin)};
+for(i in 1:length(start)){occurc[[i]]=diversityc(end[[i]],start[[i]],origin,extin)};
+for(i in 1:length(start)){occurd[[i]]=diversityd(end[[i]],start[[i]],origin,extin)};
+occurtot<-(occura+occurb+occurc+occurd);
+occurtot
+midstage<-((end+start)/2)
+q<-{-log(occurd/(occurd+occurb))}
+p<--log(occurd/(occurd+occura))
+
+
+
+#Exinction / Origination Rates Genus
+midstage<-0;occurtot.genus<-0;occura.genus<-0;occurb.genus<-0;occurc.genus<-0;occurd.genus<-0;
+for(i in 1:length(start)){occura.genus[[i]]=diversity.genus.a(end[[i]],start[[i]],origin.genus,extin.genus)};
+for(i in 1:length(start)){occurb.genus[[i]]=diversity.genus.b(end[[i]],start[[i]],origin.genus,extin.genus)};
+for(i in 1:length(start)){occurc.genus[[i]]=diversity.genus.c(end[[i]],start[[i]],origin.genus,extin.genus)};
+for(i in 1:length(start)){occurd.genus[[i]]=diversity.genus.d(end[[i]],start[[i]],origin.genus,extin.genus)};
+occurtot.genus<-(occura.genus+occurb.genus+occurc.genus+occurd.genus);
+occurtot.genus
+midstage<-((end+start)/2)
+q.genus<-{-log(occurd.genus/(occurd.genus+occurb.genus))}
+p.genus<-{-log(occurd.genus/(occurd.genus+occura.genus))}
+
+
+
+geotimescale<-function(Top,Bottom){
+  rect(171.1,{{Top-Bottom}/2+Bottom},145.5,Top,col="green ")
+  rect(145.5,{{Top-Bottom}/2+Bottom},65.5,Top,col="yellowgreen")
+  rect(65.5,{{Top-Bottom}/2+Bottom},55.8,Top,col= "red3")
+  rect(55.8,{{Top-Bottom}/2+Bottom},33.9,Top,col= "tomato2")
+  rect(33.9,{{Top-Bottom}/2+Bottom},23.03,Top,col= "orange ")
+  rect(23.03,{{Top-Bottom}/2+Bottom},5.3,Top,col= "tan ")
+  rect(5.33,{{Top-Bottom}/2+Bottom},0,Top,col= "yellow ")
+  rect(171.1,{{Top-Bottom}/2+Bottom},167.7,Bottom,col= "green ")
+  rect(167.7,{{Top-Bottom}/2+Bottom},164.7,Bottom,col= "green ")
+  rect(164.7,{{Top-Bottom}/2+Bottom},161.2,Bottom,col= "green ")
+  rect(161.2,{{Top-Bottom}/2+Bottom},155,Bottom,col= "green ")
+  rect(155,{{Top-Bottom}/2+Bottom},150.8,Bottom,col= "green ")
+  rect(150.8,{{Top-Bottom}/2+Bottom},145.5,Bottom,col= "green ")
+  rect(145.5,{{Top-Bottom}/2+Bottom},140.2,Bottom,col= "yellowgreen ")
+  rect(140.2,{{Top-Bottom}/2+Bottom},136.4,Bottom,col= "yellowgreen ")
+  rect(136.4,{{Top-Bottom}/2+Bottom},130,Bottom,col= "yellowgreen ")
+  rect(130,{{Top-Bottom}/2+Bottom},125,Bottom,col= "yellowgreen ")
+  rect(125,{{Top-Bottom}/2+Bottom},112,Bottom,col= "yellowgreen ")
+  rect(112,{{Top-Bottom}/2+Bottom},99.6,Bottom,col= "yellowgreen ")
+  rect(99.6,{{Top-Bottom}/2+Bottom},93.5,Bottom,col= "yellowgreen ")
+  rect(93.5,{{Top-Bottom}/2+Bottom},89.3,Bottom,col= "yellowgreen ")
+  rect(89.3,{{Top-Bottom}/2+Bottom},85.8,Bottom,col= "yellowgreen ")
+  rect(85.8,{{Top-Bottom}/2+Bottom},83.5,Bottom,col= "yellowgreen ")
+  rect(83.5,{{Top-Bottom}/2+Bottom},70.6,Bottom,col= "yellowgreen ")
+  rect(70.6,{{Top-Bottom}/2+Bottom},65.5,Bottom,col= "yellowgreen ")
+  rect(65.5,{{Top-Bottom}/2+Bottom},61.7,Bottom,col= "red3")
+  rect(61.7,{{Top-Bottom}/2+Bottom},58.7,Bottom,col= "red3")
+  rect(58.7,{{Top-Bottom}/2+Bottom},55.8,Bottom,col= "red3")
+  rect(55.8,{{Top-Bottom}/2+Bottom},48.6,Bottom,col= "tomato2")
+  rect(48.6,{{Top-Bottom}/2+Bottom},40.4,Bottom,col= "tomato2")
+  rect(40.4,{{Top-Bottom}/2+Bottom},37.2,Bottom,col= "tomato2")
+  rect(37.2,{{Top-Bottom}/2+Bottom},33.9,Bottom,col= "tomato2")
+  rect(33.9,{{Top-Bottom}/2+Bottom},28.45,Bottom,col= "orange ")
+  rect(28.45,{{Top-Bottom}/2+Bottom},23.03,Bottom,col= "orange ")
+  rect(23.03,{{Top-Bottom}/2+Bottom},20.43,Bottom,col="tan")
+  rect(20.43,{{Top-Bottom}/2+Bottom},15.97,Bottom,col="tan")
+  rect(15.97,{{Top-Bottom}/2+Bottom},13.65,Bottom,col="tan")
+  rect(13.65,{{Top-Bottom}/2+Bottom},11.61,Bottom,col="tan")
+  rect(11.61,{{Top-Bottom}/2+Bottom},7.25,Bottom,col="tan")
+  rect(7.25,{{Top-Bottom}/2+Bottom},5.33,Bottom,col="tan")
+  rect(5.33,{{Top-Bottom}/2+Bottom},3.6,Bottom,col="yellow")
+  rect(3.6,{{Top-Bottom}/2+Bottom},2.59,Bottom,col="yellow")
+  rect(2.59,{{Top-Bottom}/2+Bottom},1.81,Bottom,col="yellow")
+  rect(1.81,{{Top-Bottom}/2+Bottom},0,Bottom,col="yellow")
+  text(163.5,{{{Top-Bottom}/4}*3+Bottom}, "Jurassic ")
+  text(135,{{{Top-Bottom}/4}*3+Bottom}, "Cretaceous ")
+  text(61,{{{Top-Bottom}/4}*3+Bottom}, "Paleo")
+  text(50,{{{Top-Bottom}/4}*3+Bottom}, "Eocene")
+  text(29.5,{{{Top-Bottom}/4}*2.9+Bottom}, "Oligo")
+  text(18,{{{Top-Bottom}/4}*3+Bottom}, "Miocene")
+  text(3,{{{Top-Bottom}/4}*3+Bottom}, "PP")
+  text(169.4,{{{Top-Bottom}/4}+Bottom},"Ba")
+  text(166.2,{{{Top-Bottom}/4}+Bottom},"B")
+  text(162.9,{{{Top-Bottom}/4}+Bottom},"Ca")
+  text(158,{{{Top-Bottom}/4}+Bottom},"Oxfo")
+  text(153,{{{Top-Bottom}/4}+Bottom},"Ki")
+  text(148.3,{{{Top-Bottom}/4}+Bottom},"Tith")
+  text(143,{{{Top-Bottom}/4}+Bottom},"Berr")
+  text(138.4,{{{Top-Bottom}/4}+Bottom},"Val")
+  text(133.3,{{{Top-Bottom}/4}+Bottom},"Haut")
+  text(127.5,{{{Top-Bottom}/4}+Bottom},"Barr")
+  text(118,{{{Top-Bottom}/4}*.84+Bottom},"Aptian")
+  text(105,{{{Top-Bottom}/4}+Bottom},"Albian")
+  text(96.5,{{{Top-Bottom}/4}+Bottom},"Ceno")
+  text(91.5,{{{Top-Bottom}/4}+Bottom},"Tur")
+  text(87.5,{{{Top-Bottom}/4}+Bottom},"Co")
+  text(84.7,{{{Top-Bottom}/4}+Bottom},"S")
+  text(77,{{{Top-Bottom}/4}*.84+Bottom},"Campan")
+  text(68.1,{{{Top-Bottom}/4}+Bottom},"Maa")
+  text(63.7,{{{Top-Bottom}/4}+Bottom},"Da")
+  text(60.2,{{{Top-Bottom}/4}+Bottom},"Se")
+  text(57.2,{{{Top-Bottom}/4}+Bottom},"Th")
+  text(52,{{{Top-Bottom}/4}*.84+Bottom},"Ypres")
+  text(44.5,{{{Top-Bottom}/4}+Bottom},"Luteti")
+  text(38.8,{{{Top-Bottom}/4}+Bottom},"Ba")
+  text(36,{{{Top-Bottom}/4}+Bottom},"Pr")
+  text(31,{{{Top-Bottom}/4}*.84+Bottom},"Rup")
+  text(25.8,{{{Top-Bottom}/4}+Bottom},"Cha")
+  text(21.9,{{{Top-Bottom}/4}+Bottom},"A")
+  text(18.3,{{{Top-Bottom}/4}+Bottom},"Bur")
+  text(14.9,{{{Top-Bottom}/4}+Bottom},"L")
+  text(12.7,{{{Top-Bottom}/4}+Bottom},"S")
+  text(9.6,{{{Top-Bottom}/4}+Bottom},"Tor")
+  text(6.3,{{{Top-Bottom}/4}+Bottom},"M")
+  text(4.4,{{{Top-Bottom}/4}+Bottom},"Z")
+  text(.8,{{{Top-Bottom}/4}+Bottom},"P")
+}
+
+
+
+
+
+
+
+
+q.family<-{-log(occurd.family/(occurd.family+occurb.family))}
+p.family<-{-log(occurd.family/(occurd.family+occura.family))}
+
+
+p.family[which(is.infinite(p.family))]<-100
+p.family[which(is.nan(p.family))]<-0
+q.family[which(is.infinite(q.family))]<-100
+q.family[which(is.nan(q.family))]<-0
+
+
+
+q.genus<-{-log(occurd.genus/(occurd.genus+occurb.genus))}
+p.genus<-{-log(occurd.genus/(occurd.genus+occura.genus))}
+
+
+p.genus[which(is.infinite(p.genus))]<-100
+p.genus[which(is.nan(p.genus))]<-0
+q.genus[which(is.infinite(q.genus))]<-100
+q.genus[which(is.nan(q.genus))]<-0
+p[which(is.infinite(p))]<-100
+p[which(is.nan(p))]<-0
+q[which(is.infinite(q))]<-100
+q[which(is.nan(q))]<-0
+
+#and now because I was so bad at datamanagement, I have a lot of spare objects to remove & detach.
+detach(foram.dataframe);detach(pca.dataframe);detach(hist.bin.dataframe)
+detach(OAEs.dataframe);detach(Abbr.dataframe);detach(sAbbr.dataframe);detach(Abbr.family.dataframe)
+rm(a)
+rm(A)
+rm(b)
+rm(B)
+rm(c)
+rm(C)
+rm(d)
+rm(D)
+rm(i)
+rm(family.working)
+rm(genus.working)
+
+```
+
+## Initial Dataset
+
+```{r diversity, echo=TRUE}
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     #xlim=c(80,50),
+     ylim=c(0,
+            80),
+     xlab='Time (Ma)',
+     ylab="Diversity")
+#axis(side=2,at=seq(0,800,by=5))
+brewer.pal(n=8,name="Set2")->div.pallet
+lines(time.div(test.complex.index,
+               morph$origin,
+               morph$extin,
+               0.25),
+      lwd=2,
+      col=div.pallet[1])
+lines(time.div(1:length(genus.dataframe$genus),
+               genus.dataframe$origin,
+               genus.dataframe$extin,
+               0.25),
+      lwd=2,
+      col=div.pallet[2])
+lines(time.div(1:length(family.dataframe$genus),
+               family.dataframe$origin,
+               family.dataframe$extin,
+               0.25),
+      lwd=2,
+      col=div.pallet[3])
+```
+Planktic foraminifera species level diversity curve. Probably won't keep the colorscheme.
+
+
+```{r diversity w diff timescales, echo=TRUE}
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     #xlim=c(80,50),
+     ylim=c(0,
+            80),
+     xlab='Time (Ma)',
+     ylab="Diversity")
+#axis(side=2,at=seq(0,800,by=5))
+brewer.pal(n=8,name="Set2")->div.pallet
+lines(time.div(test.complex.index,
+               morph$origin,
+               morph$extin,
+               0.25),
+      lwd=2,
+      col=div.pallet[1])
+lines(midstage,occurtot,col='black',lwd=2)
+lines(time.div(1:length(genus.dataframe$genus),
+               genus.dataframe$origin,
+               genus.dataframe$extin,
+               0.25),
+      lwd=2,
+      col=div.pallet[2])
+lines(midstage,occurtot.genus,col='black',lwd=2)
+lines(time.div(1:length(family.dataframe$genus),
+               family.dataframe$origin,
+               family.dataframe$extin,
+               0.25),
+      lwd=2,
+      col=div.pallet[3])
+lines(midstage,occurtot.family,col="black",lwd=2)
+```
+The difference between the 0.25 myr binned and zone scheme binned are pretty stark. In most timeperiods the zonal scheme inflates the number of individuals. There are a few times that isn't hte case, the later part of the Cretaceous, the Danian, the latter stages of the Paleogene, and the later portion of the Miocene. This is much less the case for the genus, which appears much more stable. While this seems obvious, it's an important difference, and suggests that binning schemes are much more important in the lower taxonomic levels. 
+A case certainly should be made that there are instances (Danian, for example) where the additional resolution is useful. Where doing a longer record however, the zone scheme is appropriate.
+
+## Macrorates
+```{r macrorates, echo=TRUE}
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     ylim=c(-3,1.5),
+     xlab='Time (Ma)',
+     ylab="Macroevolutionary Rates")
+lines(midstage,p,
+      lwd=2,
+      col='blue')
+lines(midstage,-q,
+      col='red',
+      lwd=2)
+abline(h=0,col='grey',lwd=.5)
+```
+
+From Fraass et al. 2015. Needs to add the siginficant rates, but I think I can leave off the envelope. Do need to grab which zones that was from that paper... possibly by hand because of the fiddly nearly non-signficiant ones, just to be consistent. 
+
+```{r morphology}
+inc<-c(#"w",
+  #"mtheta",
+  #"lw",
+  #"lh",
+  #"ic1",
+  #"ic2",
+  #"ic3",
+  "fcirc",
+  "t",
+  "numcham",
+  "expans",
+  #"height",
+  #"length",
+  #"fcangle",
+  "area",
+  "fcarea",
+  "clava",
+  #"chamwl",
+  "keel",
+  #"bidors",
+  #"biven",
+  "biconvex",
+  "lobe"
+  #"double"
+  #"depth"
+)
+inc2<-c(#"w",
+  "mtheta",
+  "lw",
+  "lh",
+  #"ic1",
+  #"ic2",
+  #"ic3",
+  "fcirc",
+  "t",
+  "numcham",
+  "expans",
+  #"height",
+  #"length",
+  "fcangle",
+  "area",
+  #"fcarea",
+  "clava",
+  "chamwl",
+  "keel",
+  #"bidors",
+  #"biven",
+  "biconvex",
+  "lobe",
+  "double"
+  #"depth"
+)
+pairs(morph[,inc],pch=16,cex=.4)  
+```
+
+Plot of the included morphometric parameters. used to look for correlations, so that we can not include those. 
+
+```{r PCA}
+foram.dataframe->morph
+exclude<-c(4)
+morph[1:length(morph[,1]) %w/o% exclude,]->morph
+morph[which(is.na(rowSums(morph[,inc])) == F),13:36]->pca.in
+decostand(pca.in[,inc],method='standardize',2)->pca.in
+princomp(pca.in)->res.pca
+plot(res.pca)
+ res.pca$sdev^2/sum(res.pca$sdev^2)->PoV
+```
+Results of the Principle Components Analysis (PCA). First, second, and third axes contain ~`r round(sum(PoV[1:3]),4)*100`% of the variance. 
+
+
+```{r PCA2}
+foram.dataframe->morph
+exclude<-c(4)
+morph[1:length(morph[,1]) %w/o% exclude,]->morph
+morph[which(is.na(rowSums(morph[,inc2])) == F),13:36]->pca.in
+decostand(pca.in[,inc2],method='standardize',2)->pca.in
+princomp(pca.in)->res.pca2
+plot(res.pca2)
+ res.pca2$sdev^2/sum(res.pca2$sdev^2)->PoV2
+```
+Results of a second Principle Components Analysis (PCA) which includes all morphometric parameters. First, second, and third axes contain ~`r round(sum(PoV2[1:3]),4)*100`% of the variance. 
+```{r biplot2}
+biplot(res.pca2)
+```
+So, including targeted set lets us look at fewer components, with higher variance explained. The number of chamber parameters seem to dominate the first axis in the second kitchen-sink approach. That makes sense, since the number of chambers int he final whorl is dependent on the interchamber angle, which is then summarized by mtheta. So, mtheta, ic1:5 are all covarying, while number of chamber is placed at the other side. Axis two looks like it's size, (theres also some loading of size on A1). big keeled things v. others.
+
+The thing I don't like is the scree plot isn't steep. The first has lots of variance spread out through the various axes. 
+
+I think that actually makes sense. All of our measurements were designed to discriminate between the major groups, and be highly varying. Thus, because of the nature of our measruermnets the variance should be distributed because we did that on purpose. 
+
+I kept twiddling with the knobs. I'm increasingly convinced that this dataset can't be looked at with a PCA becasue there's too much variance in too many different parameters. Like, I top out with the first-thrid axis explaining not-quite 60% of the variance. That's crap.
+
+So, back to test complexity then.
+
+
+## Test Complexity
+```{r making test complexity index.1}
+inc<-c(#"w",
+  #"mtheta",
+  #"lw",
+  #"lh",
+  #"ic1",
+  #"ic2",
+  #"ic3",
+  "fcirc",
+  "t",
+  "numcham",
+  "expans",
+  #"height",
+  #"length",
+  #"fcangle",
+  "area",
+  "fcarea",
+  "clava",
+  #"chamwl",
+  "keel",
+  #"bidors",
+  #"biven",
+  "biconvex",
+  "lobe"
+  #"double"
+  #"depth"
+)
+pairs(morph[,inc],pch=16,cex=.4)  
+```
+```{r making test complexity.2}
+which(morph$species == "holmdelensis")->h
+which(morph$species == "monmouthensis")->m
+build.tci<-morph
+for(i in inc){
+  {morph[h,i]+morph[m,i]}/2->simple.value
+  build.tci[,i]<-morph[,i]-simple.value
+}
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     ylim=c(min(build.tci$fcarea,na.rm=T),
+            max(build.tci$fcarea,na.rm=T)),
+     xlab='Time (Ma)',
+     ylab="fcarea minus simple")
+segments(build.tci$origin,
+         build.tci$fcarea,
+         build.tci$extin,
+         build.tci$fcarea)
+```
+So here's a plot showing the a issue with picking one end. there are changes in the final chamber area/test area that are highly different from Meso->Ceno. Which is odd, but it's probably hte orbulinids and others like it.Either way, our assigned simple bugs are smack in the middle. Neat how it drifts one direction and the next.
+
+```{r building test complexity index.3}
+for(i in inc){
+  abs(build.tci[,i])->build.tci[,i]#taking the absolute value
+  decostand(build.tci[,i],method='range',na.rm=TRUE)->build.tci[,i]
+}
+test.complex.index<-NA
+for(i in 1:length(build.tci$species)){
+  sum(build.tci[i,inc])->test.complex.index[i]
+}
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     ylim=c(min(test.complex.index,na.rm=T),
+            max(test.complex.index,na.rm=T)),
+     xlab='Time (Ma)',
+     ylab="test.complex.index")
+segments(build.tci$origin,
+         test.complex.index,
+         build.tci$extin,
+         test.complex.index)
+
+
+#highlighting significant macroevolutionary events
+which(timeresolution.dataframe$sig.origin == 'y')->sig.origin
+which(timeresolution.dataframe$sig.extin == 'y')->sig.extin
+
+
+```
+Test complexity is constructed by standardizing the values within each parameter (each parameter has a unit variance and mean of zero). Thus, the average morphological parameter (for example, number of chambers, mean = `r round(mean(morph$numcham,na.rm=T),1)`) is 0, while a higher number of chambers is a positive number, while a lower number of chambers is negative. The absolute values of the parameters are then summed together, to examine the deviations from an 'average' test, resulting in Figure TESTCOMPLEXITY. 
+
+```{r TCI family}
+morph$family->family.ID
+range.line.plot(test.complex.index,
+                "Test Complexity Index",
+                family.ID,
+                morph$origin,
+                morph$extin
+                )
+lines(time.mean(test.complex.index,morph$origin,morph$extin,1),lwd=2)
+lines(time.median(test.complex.index,morph$origin,morph$extin,1),lwd=2,col="red")
+  time.var(test.complex.index,morph$origin,morph$extin,1)->temp
+```
+
+```{r meaniance}
+time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="meaniance of Test Complexity",
+     ylim=c(.75,
+            1.75)
+  )
+  lines(temp[,1],temp[,2],lwd=4,col='blue')
+  time.mean(test.complex.index,morph$origin,morph$extin,.1)->temp
+    lines(temp[,1],temp[,2],lwd=3,col='black')
+  time.mean(test.complex.index,morph$origin,morph$extin,.5)->temp
+    lines(temp[,1],temp[,2],lwd=2,col='grey40')
+      time.mean(test.complex.index,morph$origin,morph$extin,1)->temp
+    lines(temp[,1],temp[,2],lwd=1,col='grey60')
+    
+
+```
+
+Trends in the variance are robust across different binning schemes, particularily in the Cenozoic. There appears to be no substantive difference between a biostratigraphic binning scheme (Fraass et al., 2015) or a million year binning scheme (0.1, 0.5, 1 myr tested).
+
+```{r comparison mean extinction}
+time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2]->t.mean
+-diff(time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2])->d.t.mean
+
+plot(p[1:84],t.mean,
+     xlab="p",ylab="meaniance in Test Complexity",pch=16,col="grey")
+cor.test(p[1:84],t.mean)
+points(p[sig.extin],t.mean[sig.extin],pch=3,lwd=2,col='red')
+points(p[sig.origin],t.mean[sig.origin],pch=4,lwd=2,col='blue')
+
+plot(q[1:84],t.mean,
+     xlab="q",ylab="meaniance in Test Complexity",pch=16,col="grey")
+cor.test(q[1:84],t.mean)
+points(q[sig.extin],t.mean[sig.extin],pch=3,lwd=2,col='red')
+points(q[sig.origin],t.mean[sig.origin],pch=4,lwd=2,col='blue')
+
+plot(p[1:83],d.t.mean,
+     xlab="p(1)",ylab="first diff meaniance in Test Complexity",pch=16,col="grey")
+cor.test(p[1:83],d.t.mean)
+points(p[sig.extin],d.t.mean[sig.extin],pch=3,lwd=2,col='red')
+points(p[sig.origin],d.t.mean[sig.origin],pch=4,lwd=2,col='blue')
+
+plot(q[1:83],d.t.mean,
+     xlab="q(1)",ylab="first diff meaniance in Test Complexity",pch=16,col="grey")
+cor.test(q[1:83],d.t.mean)
+points(q[sig.extin],d.t.mean[sig.extin],pch=3,lwd=2,col='red')
+points(q[sig.origin],d.t.mean[sig.origin],pch=4,lwd=2,col='blue')
+
+plot(p[2:84],d.t.mean,
+     xlab="p(1)",ylab="first diff meaniance in Test Complexity",pch=16,col="grey")
+cor.test(p[2:84],d.t.mean)
+points(p[sig.extin+1],d.t.mean[sig.extin],pch=3,lwd=2,col='red')
+points(p[sig.origin+1],d.t.mean[sig.origin],pch=4,lwd=2,col='blue')
+
+plot(q[2:84],d.t.mean,
+     xlab="q(1)",ylab="first diff meaniance in Test Complexity",pch=16,col="grey")
+cor.test(q[2:84],d.t.mean)
+points(q[sig.extin+1],d.t.mean[sig.extin],pch=3,lwd=2,col='red')
+points(q[sig.origin+1],d.t.mean[sig.origin],pch=4,lwd=2,col='blue')
+```
+There is no correlation between q or p in the variance in test complexity. Additionally, one might suspect that the change in variance (like the end Cretaceous) would be correlated with elevated p or q. This is not the case. Variance in test complexity is not synchronous with the macroevolutionary rates at the species-, genus-, or family-levels. p values are also crap.
+
+```{r diversity mean}
+plot(occurtot[1:84],time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2],
+     xlab="diversity",ylab="meaniance in Test Complexity")
+cor.test(occurtot[1:84],time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2])
+
+```
+Only valid correlation is diversity ~ variance, which is obvious because the diversity is _n_ in the calculation of the variance. Not terribly intersting. Higher diversity means slightly higher variance.
+
+```{r mean v div}
+time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="meaniance of Test Complexity",
+     ylim=c(min(temp[,2],na.rm=T),
+            max(temp[,2],na.rm=T))
+  )
+  lines(temp[,1],temp[,2],lwd=3,col='grey')
+lines(midstage,occurtot/5,col='grey70',lwd=1)
+which(timeresolution.dataframe$sig.origin == 'y')->sig.origin
+which(timeresolution.dataframe$sig.extin == 'y')->sig.extin
+
+points(temp[sig.extin,1],temp[sig.extin,2],pch=3,lwd=2,col='red')
+points(temp[sig.origin,1],temp[sig.origin,2],pch=4,lwd=2,col='blue')
+
+```
+
+
+```{r diffvariance}
+time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->tci.mean
+
+plot(timeresolution.dataframe[1:length(diff(tci.mean[,1])),2],
+        -diff(tci.mean[,2]),
+     type='p',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="First Diff. of TCI meaniance",
+     #ylim=c(-7,7),
+     pch=16,
+     col="grey"
+  )
+
+points(timeresolution.dataframe[1:length(diff(tci.mean[,1])),2][sig.extin],
+       -diff(tci.mean[,2])[sig.extin],pch=3,lwd=2,col='red')
+rug(-mean(diff(tci.mean[,2])[sig.extin]),col='red',lwd=4,side=2)
+points(timeresolution.dataframe[1:length(diff(tci.mean[,1])),2][sig.origin],
+       -diff(tci.mean[,2])[sig.origin],pch=4,lwd=2,col='blue')
+rug(mean(-diff(tci.mean[,2])[sig.origin]),col='blue',side=2,lwd=4)
+abline(h=0)
+abline(v=65.5)
+time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->tci.var
+```
+mean change of variance at sig extinction `r mean(diff(tci.var[,2])[sig.extin])`
+mean change of meaniance at sig origination `r mean(diff(tci.mean[,2])[sig.origin])`
+
+Variance (or its first difference) are uncorrelated to macroevolutionary rates at any taxonomic level. There are, however, indiviudal genus-level extinction rates which appear to connect strongly with substantial drops in variance (~112 Ma, the Aptian Albian boundary, for example).
+
+
+```{r insert of meanTCI/div}
+time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
+time.div(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp.div
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="Mean TCI/Diversity",
+     ylim=c(0.015,
+            .15)
+  )
+  lines(temp[,1],temp[,2]/temp.div[,2],lwd=3,col='grey')
+which(timeresolution.dataframe$sig.origin == 'y')->sig.origin
+which(timeresolution.dataframe$sig.extin == 'y')->sig.extin
+
+points(temp[sig.extin,1],temp[sig.extin,2]/temp.div[sig.extin,2],pch=3,lwd=2,col='red')
+points(temp[sig.origin,1],temp[sig.origin,2]/temp.div[sig.origin,2],pch=4,lwd=2,col='blue')
+geotimescale(.02,.01)
+```
+```{r mean tci diversity sig event highlighted as lines}
+time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
+time.div(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp.div
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="Mean TCI/Diversity",
+     ylim=c(0.013,
+            .3)
+)
+lines(temp[,1],temp[,2]/temp.div[,2],lwd=1,col='grey')
+which(timeresolution.dataframe$sig.origin == 'y')->sig.origin
+which(timeresolution.dataframe$sig.extin == 'y')->sig.extin
+
+points(temp[sig.extin,1],temp[sig.extin,2]/temp.div[sig.extin,2],
+       pch=16,
+       cex=.75,col='red')
+for(i in 1:length(sig.extin)){
+  lines(temp[c(sig.extin[i],sig.extin[i]-1),1],
+        temp[c(sig.extin[i],sig.extin[i]-1),2]/
+          temp.div[c(sig.extin[i],sig.extin[i]-1),2],lwd=4,col='red')
+  
+}
+points(temp[sig.origin,1],temp[sig.origin,2]/temp.div[sig.origin,2],
+       pch=16,cex=.75,col='blue')
+for(i in 1:length(sig.origin)){
+  lines(temp[c(sig.origin[i],sig.origin[i]+1),1],
+        temp[c(sig.origin[i],sig.origin[i]+1),2]/
+          temp.div[c(sig.origin[i],sig.origin[i]+1),2],lwd=2,col='blue')
+  
+}
+
+
+geotimescale(.017,.005)
+```
+
+
+
+```{r }
+time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[,2]->t.mean
+time.div(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[,2]->t.div
+plot(p[1:84],t.mean[1:84]/t.div[1:84],
+     xlab="p",ylab="meaniance in Test Complexity",pch=16,col="grey")
+cor.test(p[1:84],t.mean[1:84]/t.div[1:84])
+points(p[sig.extin],t.mean[sig.extin]/t.div[sig.extin],pch=3,lwd=2,col='red')
+points(p[sig.origin],t.mean[sig.origin]/t.div[sig.origin],pch=4,lwd=2,col='blue')
+
+
+plot(q[1:84],t.mean[1:84]/t.div[1:84],
+     xlab="q",ylab="meaniance in Test Complexity",pch=16,col="grey")
+cor.test(q[1:84],t.mean[1:84]/t.div[1:84])
+points(q[sig.extin],t.mean[sig.extin]/t.div[sig.extin],pch=3,lwd=2,col='red')
+points(q[sig.origin],t.mean[sig.origin]/t.div[sig.origin],pch=4,lwd=2,col='blue')
+
+diff(t.mean[1:84]/t.div[1:84])->dif.tcidiv
+plot(p[2:84],dif.tcidiv,
+     xlab="p",ylab="meaniance in Test Complexity",pch=16,col="grey")
+cor.test(p[2:84],dif.tcidiv)
+points(p[sig.extin],dif.tcidiv[sig.extin-1],pch=3,lwd=2,col='red')
+points(p[sig.origin],dif.tcidiv[sig.origin-1],pch=4,lwd=2,col='blue')
+
+plot(q[2:84],dif.tcidiv,
+     xlab="q",ylab="meaniance in Test Complexity",pch=16,col="grey"
+     #,xlim=c(0,1),ylim=c(-.1,.4)
+     )
+cor.test(q[2:84],dif.tcidiv)
+points(q[sig.extin],dif.tcidiv[sig.extin-1],pch=3,lwd=2,col='red')
+points(q[sig.origin],dif.tcidiv[sig.origin-1],pch=4,lwd=2,col='blue')
+
+
+```
+
+
+```{r montecarlo variance}
+
+#building randomization process
+
+  #first build was the wrong question. The question is given the 
+  #underlying change is species, is the gain/loss in variance expected?
+iterations<-10000
+rand.var<-matrix(data=NA,
+                 ncol=iterations,
+                 nrow=length(timeresolution.dataframe$end))
+rand.test.complex.index<-NA
+for(i in 1:iterations){
+    sample(test.complex.index,
+           size=length(morph$origin),
+           replace=FALSE)->rand.test.complex.index
+  time.var(rand.test.complex.index, #importantly, the TCI scores don't change, so no need to recalculate these
+           morph$origin,
+           morph$extin,
+           timeresolution.dataframe)[,2]->rand.var[,i]
+  #print(i)
+}
+plot(timeresolution.dataframe$X,rand.var[,1],
+     type='l',
+     xlim=c(170,0),
+     lwd=.1
+)
+for(i in 1:iterations){
+  lines(timeresolution.dataframe$X,rand.var[,i],lwd=.1)
+}
+
+
+#forming the quantiles
+high.var<-NA
+low.var<-NA
+for(i in 1:length(timeresolution.dataframe$X)){
+  quantile(rand.var[i,],probs=.95,na.rm=T)->high.var[i]
+  quantile(rand.var[i,],probs=.05,na.rm=T)->low.var[i]
+}
+
+plot(timeresolution.dataframe$X,
+     tci.var[,2],
+     type='l',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="TCI Variance",
+     #ylim=c(-7,7),
+     lwd=2,
+     col="grey"
+)
+lines(timeresolution.dataframe$X,high.var)
+lines(timeresolution.dataframe$X,low.var)
+points(timeresolution.dataframe$X[sig.extin],tci.var[sig.extin,2],pch=3,lwd=2,col='red')
+points(timeresolution.dataframe$X[sig.origin],tci.var[sig.origin,2],pch=4,lwd=2,col='blue')
+abline(v=25)
+```
+This plot is the result of a Monte Carlo analysis examining what a significantly high or low variance is. The bounds are the 90% limits of a randomizing the morphologies, but keeping the diversity pattern stable. This shows that there is more variance than a null model a the Santonian, and less through the ~42 Ma to ~25 Ma, much of the later Eocene and Oligocene. This matches qualitative assessments of the Oligocene. The Eocene, however, is usually described as an interval of high diversity, and this prolonged decrease is 
+
+```{r montecarlo firstdiff}
+dif.rand.var<-rand.var[1:{length(rand.var[,1])-1},]
+for(i in 1:iterations){
+  diff(rand.var[,i])->dif.rand.var[,i]
+}
+high.dif.var<-NA
+low.dif.var<-NA
+for(i in 1:length(dif.rand.var[,1])){
+  quantile(dif.rand.var[i,],probs=.95,na.rm=T)->high.dif.var[i]
+  quantile(dif.rand.var[i,],probs=.05,na.rm=T)->low.dif.var[i]
+}
+
+plot(timeresolution.dataframe[1:length(diff(tci.var[,1])),3],
+        -diff(tci.var[,2]),
+     type='p',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="First Diff. of TCI Variance",
+     #ylim=c(-7,7),
+     pch=16,
+     col="grey"
+  )
+
+points(timeresolution.dataframe[1:length(diff(tci.var[,1])),3][sig.extin],
+       -diff(tci.var[,2])[sig.extin],pch=3,lwd=2,col='red')
+rug(-mean(diff(tci.var[,2])[sig.extin]),col='red',lwd=4,side=2)
+points(timeresolution.dataframe[1:length(diff(tci.var[,1])),3][sig.origin],
+       -diff(tci.var[,2])[sig.origin],pch=4,lwd=2,col='blue')
+rug(mean(-diff(tci.var[,2])[sig.origin]),col='blue',side=2,lwd=4)
+abline(h=0)
+abline(v=65.5)
+lines(timeresolution.dataframe[1:length(diff(tci.var[,1])),3],high.dif.var)
+lines(timeresolution.dataframe[1:length(diff(tci.var[,1])),3],low.dif.var)
+```
+
+This plot depicts the ~90% confidence envelope for a significant change in variance, keeping originations and extinctions as observed from fossil data. It depicts significant increases in variance associated with the end of OAE1d and the Aptian (OAE1a), and a loss of variance coincident with the early Campanian. The Cenozoic is limited in significant changes, with only the mid. Miocene Climatic Optimum as a signficant increase and decrease. 
+
+Significantly low variance: late Eocene & Oligocene (_Sustained_)
+
+Signficantly high variance: Santonian
+
+Significantly high increase in variance: Aptian (OAE1a?), early Turonian (OAE2?), MMCO
+
+Significantly high decrease in varaince: late Turonian, early Campanian, MMCO
+
+We assume here no relationship between the extant morpholgy and new species (meaning that the stochastic variance is likely too high), 
+
+
+
+# further experiments
+```{r genus TCI}
+genus.tci<-matrix(NA,nrow=length(timeresolution.dataframe$X),ncol={length(unique(morph$genus))+1})
+as.data.frame(genus.tci)->genus.tci
+genus.tci[,1]<-timeresolution.dataframe$X
+as.character(unique(morph$genus))->colnames(genus.tci)[2:{length(unique(morph$genus))+1}]
+colnames(genus.tci)[1]<-'midstage'
+species.in.genus<-NA
+for(i in unique(morph$genus)){
+  which(morph$genus == i)->species.in.genus
+  time.mean(test.complex.index[species.in.genus],
+            morph$origin[species.in.genus],
+            morph$extin[species.in.genus],
+            timeresolution.dataframe)[,2]->genus.tci[,i]
+
+  }
+rm(species.in.genus)
+
+plot(genus.tci[,1],
+     genus.tci[,2],
+     xlim=c(170,0),
+     ylim=c(min(genus.tci[,2:{length(unique(morph$genus))+1}],na.rm=T),
+            max(genus.tci[,2:{length(unique(morph$genus))+1}],na.rm=T)),
+     type='l')
+sample(colors(),{length(unique(morph$genus))+1})->genus.color
+for(i in unique(morph$genus)){
+  
+  lines(genus.tci[,1],
+        genus.tci[,i],
+        col = genus.color[which(colnames(genus.tci) == i)])
+  }
+
+```
+
+Plot of the changes in TCI within a genus through time. each Genus is a unique color.
+
+```{r within genus TCI 2}
+plot(#genus.tci[,1],
+     rev(na.omit(genus.tci[,2])),
+     xlim=c(40,0),
+     ylim=c(min(genus.tci[,2:{length(unique(morph$genus))+1}],na.rm=T),
+            max(genus.tci[,2:{length(unique(morph$genus))+1}],na.rm=T)),
+     type='l')
+sample(colors(),{length(unique(morph$genus))+1})->genus.color
+for(i in unique(morph$genus)){
+  
+  lines(#genus.tci[,1],
+        rev(na.omit(genus.tci[,i])),
+        col = genus.color[which(colnames(genus.tci) == i)])
+}
+genus.tci.naomit<-genus.tci[,2:length(genus.tci[1,])]
+for(i in 1:length(genus.tci.naomit[1,])){
+  rev(genus.tci.naomit[!is.na(genus.tci.naomit[,i]),i])->holding.obj
+  rep(NA,length(genus.tci.naomit[,i]))->genus.tci.naomit[,i]
+  c(holding.obj,
+    rep(NA,length(genus.tci.naomit[,i])-length(holding.obj))
+    )->genus.tci.naomit[,i]
+}
+lines(rowMeans(genus.tci.naomit,na.rm=T),lwd=3)
+```
+plot of the mean TCI scores for a genus through time, putting the start for each genus at 0. Average is pretty steady.
+
+```{r genus TCI 3}
+
+genus.tci.naomit<-genus.tci[,2:length(genus.tci[1,])]
+for(i in 1:length(genus.tci.naomit[1,])){
+  rev(genus.tci.naomit[!is.na(genus.tci.naomit[,i]),i])->holding.obj
+  rep(NA,length(genus.tci.naomit[,i]))->genus.tci.naomit[,i]
+  c(holding.obj,
+    rep(NA,length(genus.tci.naomit[,i])-length(holding.obj))
+  )->genus.tci.naomit[,i]
+  
+  genus.tci.naomit[,i]-genus.tci.naomit[1,i]->genus.tci.naomit[,i]
+}
+
+
+plot(#genus.tci[,1],
+  na.omit(genus.tci.naomit[,2]),
+  xlim=c(40,0),
+  ylim=c(-15,
+         15),
+  type='l')
+sample(colors(),{length(unique(morph$genus))+1})->genus.color
+for(i in unique(morph$genus)){
+  
+  lines(#genus.tci[,1],
+    na.omit(genus.tci.naomit[,i]),
+    col = genus.color[which(colnames(genus.tci) == i)])
+}
+lines(rowMeans(genus.tci.naomit,na.rm=T),lwd=3)
+#plot of the mean TCI scores for a genus through time. Average is pretty steady.
+abline(h=0)
+```
+change from initial morphology through time. 
+
+```{r genus TCI 4}
+resolution<-0.1
+genus.tci<-matrix(NA,
+                  nrow=length(time.mean(test.complex.index,
+            morph$origin,
+            morph$extin,
+            resolution)[,1]
+            ),ncol={length(unique(morph$genus))+1})
+as.data.frame(genus.tci)->genus.tci
+as.character(unique(morph$genus))->colnames(genus.tci)[2:{length(unique(morph$genus))+1}]
+colnames(genus.tci)[1]<-'midstage'
+species.in.genus<-NA
+time.mean(test.complex.index,
+            morph$origin,
+            morph$extin,
+            0.1)[,1]->genus.tci[,1]
+
+for(i in unique(morph$genus)){
+  which(morph$genus == i)->species.in.genus
+  time.mean(test.complex.index[species.in.genus],
+            morph$origin[species.in.genus],
+            morph$extin[species.in.genus],
+            resolution)->holding.obj
+  holding.obj[,2]-holding.obj[2,2]->holding.obj[,2]
+  which(round(holding.obj[1,1],digits=1) == round(genus.tci[,1],digits=1))->start
+  genus.tci[start:{start+length(holding.obj[,2])-1},i]<-holding.obj[,2]
+}
+
+
+rm(species.in.genus)
+
+plot(genus.tci[,1],
+     genus.tci[,2],
+     xlim=c(170,0),
+     ylim=c(min(genus.tci[,2:{length(unique(morph$genus))+1}],na.rm=T),
+            max(genus.tci[,2:{length(unique(morph$genus))+1}],na.rm=T)),
+     type='l')
+sample(colors(),{length(unique(morph$genus))+1})->genus.color
+for(i in unique(morph$genus)){
+  
+  lines(genus.tci[,1],
+        genus.tci[,i],
+        col = genus.color[which(colnames(genus.tci) == i)])
+  }
+
+
+genus.tci.naomit<-genus.tci[,2:length(genus.tci[1,])]
+for(i in 1:length(genus.tci.naomit[1,])){
+  genus.tci.naomit[!is.na(genus.tci.naomit[,i]),i]->holding.obj
+  rep(NA,length(genus.tci.naomit[,i]))->genus.tci.naomit[,i]
+  c(holding.obj,
+    rep(NA,length(genus.tci.naomit[,i])-length(holding.obj))
+  )->genus.tci.naomit[,i]
+  
+  genus.tci.naomit[,i]-genus.tci.naomit[1,i]->genus.tci.naomit[,i]
+}
+
+```
+
+
+

@@ -1,0 +1,347 @@
+---
+title: "Assigning simple morphologies"
+author: "Fraass"
+date: "7/19/2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+As I sit here this morning, I'm reminded of the fact that this is exactly how we started this project. We've literally come back around to picking the two simplest bugs and doing the analysis that way. That's *exactly* how we started.
+
+OH WELL, on with the show.
+
+```{r loading}
+read.csv(file="/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/MasterList (vstat 1.05).csv",header=TRUE)->foram.dataframe
+foram.dataframe->morph
+
+"%w/o%" <- function(x, y) x[!x %in% y] #--  x without y
+
+exclude<-c(4)
+morph[1:length(morph[,1] %w/o% exclude),]->morph
+```
+This adds the files, excluding the one that is missing data.
+
+```{r custom functions, include=FALSE}
+time.mean<-function(data,origin,extin,resolution=0.1){
+  max.time<-max(origin)
+  min.time<-min(extin)
+  seq(to=max.time,from=min.time,by=resolution)->t
+  cbind(t,rep(NA,times=length(t)))->output
+  for(i in 1:length(t)){
+    mean(data[which(origin > t[i] & extin < t[i])],na.rm=T)->output[i,2]
+  }
+  return(output)
+}
+time.div<-function(data,origin,extin,resolution=0.1){
+  max.time<-max(origin)
+  min.time<-min(extin)
+  seq(to=max.time,from=min.time,by=resolution)->t
+  cbind(t,rep(NA,times=length(t)))->output
+  for(i in 1:length(t)){
+    length(test.complex.index[which(origin > t[i] & extin < t[i])])->output[i,2]
+    output[i,2]-1->output[i,2]
+    }
+  return(output)
+}
+time.median<-function(data,origin,extin,resolution=0.1){
+  max.time<-max(origin)
+  min.time<-min(extin)
+  seq(to=max.time,from=min.time,by=resolution)->t
+  cbind(t,rep(NA,times=length(t)))->output
+  for(i in 1:length(t)){
+    median(data[which(origin > t[i] & extin < t[i])],na.rm=T)->output[i,2]
+  }
+  return(output)
+}
+time.var<-function(data,origin,extin,resolution=0.1){
+  max.time<-max(origin)
+  min.time<-min(extin)
+  seq(to=max.time,from=min.time,by=resolution)->t
+  cbind(t,rep(NA,times=length(t)))->output
+  for(i in 1:length(t)){
+    var(data[which(origin > t[i] & extin < t[i])],na.rm=T)->output[i,2]
+  }
+  return(output)
+}
+library(vegan)
+library(RColorBrewer)
+library(vioplot)
+range.line.plot<-function(var.A,y.axis.label,family.ID,origin,extin){
+  #Setting the spacer to make the vioplots visible
+  spacer<-4.5
+  #setting colors
+  #these are based on the colors set in the other function (vioplot.pca)
+  c(brewer.pal(12,'Set3'),brewer.pal(8,"Set2"),brewer.pal(9,'Set1'),'black','grey','black','brown')->col.temp
+  fam.col<-rep(NA,length(family.ID))
+  droplevels(family.ID)->family.ID
+  col.code<-rep(NA,times=length(levels(family.ID)))
+  for(i in 1:length(levels(family.ID))){
+    levels(family.ID)[i]->temp.ID
+    if(temp.ID == "Candeinidae"){col.code[i]<-1}
+    if(temp.ID == "Cassigerinellidae"){col.code[i]<-3}
+    if(temp.ID == "Chiloguembelinidae"){col.code[i]<-4}
+    if(temp.ID == "Favusellidae"){col.code[i]<-5}
+    if(temp.ID == "Globigerinelloididae"){col.code[i]<-6}
+    if(temp.ID == "Globigerinidae"){col.code[i]<-7}
+    if(temp.ID == "Globoquadrinidae"){col.code[i]<-8}
+    if(temp.ID == "Globorotaliidae"){col.code[i]<-9}
+    if(temp.ID == "Globotruncanidae"){col.code[i]<-10}
+    if(temp.ID == "Globuligerinidae"){col.code[i]<-11}
+    if(temp.ID == "Guembelitriidae"){col.code[i]<-13}
+    if(temp.ID == "Hantkeninidae"){col.code[i]<-14}
+    if(temp.ID == "Hastigerinidae"){col.code[i]<-15}
+    if(temp.ID == "Hedbergellidae"){col.code[i]<-16}
+    if(temp.ID == "Heterohelicidae"){col.code[i]<-19}
+    if(temp.ID == "Planomalinidae"){col.code[i]<-21}
+    if(temp.ID == "Rotaliporidae"){col.code[i]<-22}
+    if(temp.ID == "Rugoglobigerinidae"){col.code[i]<-23}
+    if(temp.ID == "Schackoinidae"){col.code[i]<-27}
+    if(temp.ID == "Truncorotaloididae"){col.code[i]<-31}
+    if(temp.ID == "UNKNOWN"){col.code[i]<-32}
+    if(temp.ID == "Paraticinellinae"){col.code[i]<-33}
+  }
+  col.key<-cbind(levels(family.ID),col.code) #col.key is now a 2-col obj with family (c1) and color.index (c2)
+  for(i in 1:nrow(col.key)){
+    col.key[i,2]<-col.temp[as.numeric(col.key[i,2])]
+  }
+  1->counter
+  for(i in levels(family.ID)){ #This portion takes colkey and subs in the color value from RColorBrewer
+    fam.col[which(family.ID == i)]<-col.key[which(col.key[,1] == i),2]
+    counter+1->counter
+  }
+  plot(0,0,type='n',
+       xlim=c(max(as.vector(origin),na.rm=T),-{spacer*length(levels(family.ID))*.9}),
+       ylim=c(min(var.A,na.rm=T),max(var.A,na.rm=T)),
+       ylab=paste(y.axis.label),
+       xlab='Time (Ma)'
+  )
+  1->counter
+  aggregate(var.A,by=list(family.ID),FUN=median,na.rm=T)->a.order
+  order(a.order[,2])->a.order.1
+  a.order[a.order.1,1]->a.order#setting an order for the vioplots
+  for(i in a.order){
+    if(all(is.na(var.A[which(family.ID == i)])) != T){
+      segments(as.vector(origin[which(family.ID == i)]),
+               var.A[which(family.ID == i)],
+               as.vector(extin[which(family.ID == i)]),
+               var.A[which(family.ID == i)],
+               col=col.key[which(col.key[,1] == i),2],
+               lwd=2
+      )
+      vioplot(na.omit(var.A[which(family.ID == i)]),
+              horizontal=F,
+              at=-{counter-0.5}*spacer,
+              add=T,
+              border=F,
+              col=col.key[which(col.key[,1] == i),2],
+              wex=spacer,
+              na.rm=T)
+      text(-{counter-0.5}*spacer,
+           -10,
+           labels=i,
+           col=col.key[which(col.key[,1] == i),2],
+           srt=90
+           
+      )
+    }
+    counter+1->counter
+  }
+}
+```
+```{r single morphology plot}
+#basic plot
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     ylim=c(min(foram.dataframe$fcarea,na.rm=T),
+            max(foram.dataframe$fcarea,na.rm=T)),
+     xlab='Time (Ma)',
+     ylab="fcarea")
+segments(foram.dataframe$origin,
+         foram.dataframe$fcarea,
+         foram.dataframe$extin,
+         foram.dataframe$fcarea)
+```
+```{r making test complexity index.1}
+inc<-c(#"w",
+  #"mtheta",
+  #"lw",
+  #"lh",
+  #"ic1",
+  #"ic2",
+  #"ic3",
+  "fcirc",
+  "t",
+  "numcham",
+  "expans",
+  #"height",
+  #"length",
+  #"fcangle",
+  "area",
+  "fcarea",
+  "clava",
+  #"chamwl",
+  "keel",
+  #"bidors",
+  #"biven",
+  "biconvex",
+  "lobe"
+  #"double"
+  #"depth"
+)
+pairs(morph[,inc],pch=16,cex=.4)  
+```
+```{r making test complexity.2}
+which(morph$species == "holmdelensis")->h
+which(morph$species == "monmouthensis")->m
+build.tci<-morph
+for(i in inc){
+  {morph[h,i]+morph[m,i]}/2->simple.value
+  build.tci[,i]<-morph[,i]-simple.value
+}
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     ylim=c(min(build.tci$fcarea,na.rm=T),
+            max(build.tci$fcarea,na.rm=T)),
+     xlab='Time (Ma)',
+     ylab="fcarea minus simple")
+segments(build.tci$origin,
+         build.tci$fcarea,
+         build.tci$extin,
+         build.tci$fcarea)
+```
+So here's a plot showing the a issue with picking one end. there are changes in the final chamber area/test area that are highly different from Meso->Ceno. Which is odd, but it's probably hte orbulinids and others like it.Either way, our assigned simple bugs are smack in the middle. Neat how it drifts one direction and the next.
+
+```{r building test complexity index.3}
+for(i in inc){
+  abs(build.tci[,i])->build.tci[,i]#taking the absolute value
+  decostand(build.tci[,i],method='range',na.rm=TRUE)->build.tci[,i]
+}
+test.complex.index<-NA
+for(i in 1:length(build.tci$species)){
+  sum(build.tci[i,inc])->test.complex.index[i]
+}
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     ylim=c(min(test.complex.index,na.rm=T),
+            max(test.complex.index,na.rm=T)),
+     xlab='Time (Ma)',
+     ylab="test.complex.index")
+segments(build.tci$origin,
+         test.complex.index,
+         build.tci$extin,
+         test.complex.index)
+```
+Yep, still got roughly the same expression. 2 survivor bugs are the ones at *almost* 0 down there. There's two if you look really really closely
+```{r TCI family}
+morph$family->family.ID
+range.line.plot(test.complex.index,
+                "Test Complexity",
+                family.ID,
+                morph$origin,
+                morph$extin
+                )
+```
+Here's the breakdown of the families. 
+
+```{r inc mean median var}
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     ylim=c(min(test.complex.index,na.rm=T),
+            max(test.complex.index,na.rm=T)),
+     xlab='Time (Ma)',
+     ylab="test.complex.index")
+segments(build.tci$origin,
+         test.complex.index,
+         build.tci$extin,
+         test.complex.index)
+lines(time.mean(test.complex.index,morph$origin,morph$extin,.25),lwd=2)
+lines(time.median(test.complex.index,morph$origin,morph$extin,.25),lwd=2,col="red")
+  time.var(test.complex.index,morph$origin,morph$extin,.25)->temp
+  lines(temp[,1],temp[,2],lwd=2,col='blue')
+```
+_Alright, fine. Happy? The variance is mostly mimicking the mean. Yes, we can do the damn mean/diversity bit._
+```{r mean per div}
+time.mean(test.complex.index,morph$origin,morph$extin,.25)[,2]/time.div(test.complex.index,morph$origin,morph$extin,.25)[,2]->meanperdiv
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     ylim=c(0,
+            .2),
+     xlab='Time (Ma)',
+     ylab="Mean / Diversity")
+axis(side=1,at=seq(0,170,by=10))
+lines(time.mean(test.complex.index,morph$origin,morph$extin,.25)[,1],meanperdiv,lwd=2)
+abline(v=c(23,55,34))
+abline(v=OAEs.dataframe$oae.start)
+```
+OK, back to the same story. Higher mean TCI scores during recovery as morphology is colonized (adaptive radiation).
+```{r trophic strategy}
+photo.gen<-c('Morozovella',
+             'Igorina',
+             'Acarinina')
+which(is.na(match(morph$genus,photo.gen))==FALSE)->photo.ind
+c(photo.ind,which(morph$species == 'inconstans'))->photo.ind
+#Spinose
+spin.ind<-c("Globoturbotrotalia","Globorotalites","Catapsydrax","Paragloborotalia",
+            "Subbotina", "Parasubbotina","Eoglobigerina")
+which(is.na(match(morph$genus,spin.ind))==FALSE)->spin.ind
+plot(0,0,
+     type='n',
+     
+     #xlim=c(170,0),
+     xlim=c(80,50),
+     ylim=c(min(test.complex.index,na.rm=T),
+            max(test.complex.index,na.rm=T)),
+     xlab='Time (Ma)',
+     ylab="Test Complexity Index")
+segments(morph$origin,
+         test.complex.index,
+         morph$extin,
+         test.complex.index)
+#lines(time.mean(test.complex.index,morph$origin,morph$extin,0.25),lwd=2)
+#[c(spin.ind,photo.ind)],
+
+lines(time.mean(test.complex.index,morph$origin,morph$extin,0.25))
+lines(time.mean(test.complex.index[photo.ind],
+               morph$origin[photo.ind],
+               morph$extin[photo.ind],0.25),
+      lwd=4,
+      col='green')
+lines(time.mean(test.complex.index[spin.ind],
+               morph$origin[spin.ind],
+               morph$extin[spin.ind],0.25),
+      lwd=4,
+      col='blue')
+lines(time.mean(test.complex.index[1:length(test.complex.index %w/o% c(spin.ind,photo.ind)],
+               morph$origin[1:length(test.complex.index %w/o% c(spin.ind,photo.ind)],
+               morph$extin[1:length(test.complex.index %w/o% c(spin.ind,photo.ind)],0.25),
+      lwd=4,
+      col='purple')
+```
+Same story
+
+```{r mean per div trophic levels}
+time.mean(test.complex.index,morph$origin,morph$extin,.25)[,2]/time.div(test.complex.index,morph$origin,morph$extin,.25)[,2]->meanperdiv
+time.mean(test.complex.index[photo.ind],morph$origin[photo.ind],morph$extin[photo.ind],.25)[,2]/time.div(test.complex.index[photo.ind],morph$origin[photo.ind],morph$extin[photo.ind],.25)[,2]->meanperdiv.photo
+time.mean(test.complex.index[spin.ind],morph$origin[spin.ind],morph$extin[spin.ind],.25)[,2]/time.div(test.complex.index[spin.ind],morph$origin[spin.ind],morph$extin[spin.ind],.25)[,2]->meanperdiv.spin
+plot(0,0,
+     type='n',
+     #xlim=c(170,0),
+      xlim=c(80,50),
+     ylim=c(0,
+            .5),
+     xlab='Time (Ma)',
+     ylab="Mean / Diversity")
+lines(time.mean(test.complex.index,morph$origin,morph$extin,.25)[,1],meanperdiv,lwd=2)
+lines(time.mean(test.complex.index[photo.ind],morph$origin[photo.ind],morph$extin[photo.ind],.25)[,1],meanperdiv.photo,lwd=2,col="green")
+lines(time.mean(test.complex.index[spin.ind],morph$origin[spin.ind],morph$extin[spin.ind],.25)[,1],meanperdiv.spin,lwd=2,col="blue")
+```
+
