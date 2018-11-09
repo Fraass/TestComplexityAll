@@ -2,8 +2,8 @@
 title: "Entire Range Test Complexity"
 author: "Fraass"
 date: "7/4/2018"
-output: 
-  html_document: 
+output:
+  html_document:
     keep_md: yes
 ---
 
@@ -617,7 +617,7 @@ plot(0,0,
      xlim=c(170,0),
      xlab="Time (Ma)",
      ylab="Mean TCI/Diversity",
-     ylim=c(0.02,
+     ylim=c(0.015,
             .15)
   )
   lines(temp[,1],temp[,2]/temp.div[,2],lwd=3,col='grey')
@@ -626,9 +626,49 @@ which(timeresolution.dataframe$sig.extin == 'y')->sig.extin
 
 points(temp[sig.extin,1],temp[sig.extin,2]/temp.div[sig.extin,2],pch=3,lwd=2,col='red')
 points(temp[sig.origin,1],temp[sig.origin,2]/temp.div[sig.origin,2],pch=4,lwd=2,col='blue')
+geotimescale(.02,.01)
 ```
 
 ![](REVISEDEntireRange_files/figure-html/insert of meanTCI/div-1.png)<!-- -->
+
+```r
+time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
+time.div(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp.div
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     xlab="Time (Ma)",
+     ylab="Mean TCI/Diversity",
+     ylim=c(0.013,
+            .3)
+)
+lines(temp[,1],temp[,2]/temp.div[,2],lwd=1,col='grey')
+which(timeresolution.dataframe$sig.origin == 'y')->sig.origin
+which(timeresolution.dataframe$sig.extin == 'y')->sig.extin
+
+points(temp[sig.extin,1],temp[sig.extin,2]/temp.div[sig.extin,2],
+       pch=16,
+       cex=.75,col='red')
+for(i in 1:length(sig.extin)){
+  lines(temp[c(sig.extin[i],sig.extin[i]-1),1],
+        temp[c(sig.extin[i],sig.extin[i]-1),2]/
+          temp.div[c(sig.extin[i],sig.extin[i]-1),2],lwd=4,col='red')
+  
+}
+points(temp[sig.origin,1],temp[sig.origin,2]/temp.div[sig.origin,2],
+       pch=16,cex=.75,col='blue')
+for(i in 1:length(sig.origin)){
+  lines(temp[c(sig.origin[i],sig.origin[i]+1),1],
+        temp[c(sig.origin[i],sig.origin[i]+1),2]/
+          temp.div[c(sig.origin[i],sig.origin[i]+1),2],lwd=2,col='blue')
+  
+}
+
+
+geotimescale(.017,.005)
+```
+
+![](REVISEDEntireRange_files/figure-html/mean tci diversity sig event highlighted as lines-1.png)<!-- -->
 
 
 

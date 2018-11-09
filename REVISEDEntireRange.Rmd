@@ -3,13 +3,14 @@ title: "Entire Range Test Complexity"
 author: "Fraass"
 date: "7/4/2018"
 output:
-  pdf_document: default
   html_document:
     keep_md: yes
 ---
 
 ```{r setup, include=FALSE}
+
 knitr::opts_chunk$set(echo = TRUE)
+library(RCurl)
 read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/MasterList%20(vstat%201.05).csv?token=ARrUXds6yZTAACMYheFYdBw0AMAm5Ud-ks5b7Y2cwA%3D%3D"),header=T)->foram.dataframe
 foram.dataframe->morph
 
@@ -209,9 +210,6 @@ attach(foram.dataframe)
 #wanted age model reference
 read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Zone%20scheme.csv?token=ARrUXRf4jlfHuuIqnqEhduz-DfAzuL75ks5b7Y-BwA%3D%3D"),header=T)->timeresolution.dataframe
 attach(timeresolution.dataframe)
-#pca
-read.table(file="/Users/andrewfraass/Science!/Research/MacroEvo/Data & Analysis/dataframes/pca.morph.csv",header=TRUE,sep= ",")->pca.dataframe
-attach(pca.dataframe)
 #periods
 read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Periods.csv?token=ARrUXZUwxHEGX7ft1S5hq2u7IULuoIQRks5b7Y_pwA%3D%3D"),header=T)->hist.bin.dataframe
 attach(hist.bin.dataframe)
@@ -227,7 +225,7 @@ read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll
 attach(Abbr.family.dataframe)
 
 
-names(foram.dataframe);names(timeresolution.dataframe);names(pca.dataframe);names(hist.bin.dataframe);names(OAEs.dataframe)
+names(foram.dataframe);names(timeresolution.dataframe);names(hist.bin.dataframe);names(OAEs.dataframe)
 library(vegan)
 {timeresolution.dataframe$end+timeresolution.dataframe$start}/2->timeresolution.dataframe[,3]
 
@@ -835,7 +833,7 @@ q[which(is.infinite(q))]<-100
 q[which(is.nan(q))]<-0
 
 #and now because I was so bad at datamanagement, I have a lot of spare objects to remove & detach.
-detach(foram.dataframe);detach(pca.dataframe);detach(hist.bin.dataframe)
+detach(foram.dataframe);detach(hist.bin.dataframe)
 detach(OAEs.dataframe);detach(Abbr.dataframe);detach(sAbbr.dataframe);detach(Abbr.family.dataframe)
 rm(a)
 rm(A)
