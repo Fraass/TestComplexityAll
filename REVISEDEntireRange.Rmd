@@ -1127,9 +1127,10 @@ range.line.plot(test.complex.index,
                 morph$origin,
                 morph$extin
                 )
-lines(time.mean(test.complex.index,morph$origin,morph$extin,1),lwd=2)
-lines(time.median(test.complex.index,morph$origin,morph$extin,1),lwd=2,col="red")
-  time.var(test.complex.index,morph$origin,morph$extin,1)->temp
+lines(time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe),lwd=2)
+lines(time.median(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe),lwd=2,col="red")
+  time.var(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
+  lines(temp,lwd=2,col='blue')
 ```
 
 Clear change across the Cretaceous, but the change during the Cenozoic is more complex, with the complexity peaking early on in the Paleogene (at the PETM?), then slowly declining until flattening out in the Oligocene, then increasing again in the Neogene.
@@ -1162,37 +1163,37 @@ time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[
 -diff(time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2])->d.t.mean
 
 plot(p[1:84],t.mean,
-     xlab="p",ylab="meaniance in Test Complexity",pch=16,col="grey")
+     xlab="p",ylab="Mean in Test Complexity",pch=16,col="grey")
 cor.test(p[1:84],t.mean)
 points(p[sig.extin],t.mean[sig.extin],pch=3,lwd=2,col='red')
 points(p[sig.origin],t.mean[sig.origin],pch=4,lwd=2,col='blue')
 
 plot(q[1:84],t.mean,
-     xlab="q",ylab="meaniance in Test Complexity",pch=16,col="grey")
+     xlab="q",ylab="Mean in Test Complexity",pch=16,col="grey")
 cor.test(q[1:84],t.mean)
 points(q[sig.extin],t.mean[sig.extin],pch=3,lwd=2,col='red')
 points(q[sig.origin],t.mean[sig.origin],pch=4,lwd=2,col='blue')
 
 plot(p[1:83],d.t.mean,
-     xlab="p(1)",ylab="first diff meaniance in Test Complexity",pch=16,col="grey")
+     xlab="p(1)",ylab="first diff Mean in Test Complexity",pch=16,col="grey")
 cor.test(p[1:83],d.t.mean)
 points(p[sig.extin],d.t.mean[sig.extin],pch=3,lwd=2,col='red')
 points(p[sig.origin],d.t.mean[sig.origin],pch=4,lwd=2,col='blue')
 
 plot(q[1:83],d.t.mean,
-     xlab="q(1)",ylab="first diff meaniance in Test Complexity",pch=16,col="grey")
+     xlab="q(1)",ylab="first diff Mean in Test Complexity",pch=16,col="grey")
 cor.test(q[1:83],d.t.mean)
 points(q[sig.extin],d.t.mean[sig.extin],pch=3,lwd=2,col='red')
 points(q[sig.origin],d.t.mean[sig.origin],pch=4,lwd=2,col='blue')
 
 plot(p[2:84],d.t.mean,
-     xlab="p(1)",ylab="first diff meaniance in Test Complexity",pch=16,col="grey")
+     xlab="p(1)",ylab="first diff Mean in Test Complexity",pch=16,col="grey")
 cor.test(p[2:84],d.t.mean)
 points(p[sig.extin+1],d.t.mean[sig.extin],pch=3,lwd=2,col='red')
 points(p[sig.origin+1],d.t.mean[sig.origin],pch=4,lwd=2,col='blue')
 
 plot(q[2:84],d.t.mean,
-     xlab="q(1)",ylab="first diff meaniance in Test Complexity",pch=16,col="grey")
+     xlab="q(1)",ylab="first diff Mean in Test Complexity",pch=16,col="grey")
 cor.test(q[2:84],d.t.mean)
 points(q[sig.extin+1],d.t.mean[sig.extin],pch=3,lwd=2,col='red')
 points(q[sig.origin+1],d.t.mean[sig.origin],pch=4,lwd=2,col='blue')
@@ -1269,34 +1270,46 @@ points(occurtot[which(time.temp >=145.5)],
 points(occurtot[which(time.temp >=145.5)],
          mean.TCI.temp[which(time.temp >=145.5)],cex=point.size)
 #cor.test(occurtot[1:84],time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)[1:84,2])
-
+#Further development should make this an animation (see here) https://yihui.name/animation/example/moving-block/
 ```
 Mean test complexity and diversity are correlated. This follows the qualitative descriptions of various authors for decades, that the high diversity times are the highest test complexity.
 
 There is a clear break between the Lower and Upper Cretaceous, represented by the higher complexity Upper Creteceous. There are 2 zones within the Cenomanian that seem to fit with the Lower Cretaceous, rather than the Upper. The Upper Cretaceous seem to record a relatively stable test complexity score with gradual increasing diversity. If we then look at the Paleogene, there's a strong increase in the mean test complexity without a corresponding increase in diversity (till the PETM bin).
-The Early Eocene is marked by both a drop in diversity and complexity, then the mid-late Eocene fall well apart from the PETM interval, and drop in complexity over the time. The increase in 
+The Early Eocene is marked by both a drop in diversity and complexity, then the mid-late Eocene fall well apart from the PETM interval, and drop in complexity over the time. The Oligocene marks a return to the diversity-Mean Test Complexity scores of the Early Cretaceous, with low to medium diversity numbers and low test complexity. The Miocene has medium diversity but an increasing relationship with test complexity, somewhat similar to the Paleogene relationship, while the Pliocene and Pleistocene have higher diversity and higher mean test complexity.
+
+One way to view this plot is that the early Paleocene was a time where the test diversity was coming closer to the late Cretaceous diversity-complexity structure (though see Lowery & Fraass in review), and the PETM reset that relationship so that a more conservative relationship with higher diversity required to achieve the same levels of complexity. Similarly, the EOT doesn't remove as much complexity as one would think, it instead has an outsized effect on diversity.
 
 
 
 ```{r mean v div}
-time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->temp
+time.mean(test.complex.index,morph$origin,morph$extin,timeresolution.dataframe)->time.TCI
 plot(0,0,
      type='n',
      xlim=c(170,0),
      xlab="Time (Ma)",
-     ylab="meaniance of Test Complexity",
+     ylab="Mean of Test Complexity",
      ylim=c(min(temp[,2],na.rm=T),
             max(temp[,2],na.rm=T))
-  )
-  lines(temp[,1],temp[,2],lwd=3,col='grey')
-lines(midstage,occurtot/5,col='grey70',lwd=1)
+)
+
 which(timeresolution.dataframe$sig.origin == 'y')->sig.origin
 which(timeresolution.dataframe$sig.extin == 'y')->sig.extin
 
-points(temp[sig.extin,1],temp[sig.extin,2],pch=3,lwd=2,col='red')
-points(temp[sig.origin,1],temp[sig.origin,2],pch=4,lwd=2,col='blue')
+rect(timeresolution.dataframe$end[sig.origin],.8,
+          timeresolution.dataframe$start[sig.origin],1.3,
+          col='blue',border=F)
+rect(timeresolution.dataframe$end[sig.extin],1.3,
+     timeresolution.dataframe$start[sig.extin],1.8,
+     col='red',border=F)
 
+lines(midstage,occurtot/100+.9,col='grey',lwd=2)
+
+lines(time.TCI[,1],time.TCI[,2],lwd=3,col='black')
+
+#heavy illustrator edits to make this plot publication worthy
 ```
+After the edits, this plot is a clear way of showing where diversity outstrips complexity and visa-versa. 
+
 
 
 ```{r diffvariance}
@@ -1307,7 +1320,7 @@ plot(timeresolution.dataframe[1:length(diff(tci.mean[,1])),2],
      type='p',
      xlim=c(170,0),
      xlab="Time (Ma)",
-     ylab="First Diff. of TCI meaniance",
+     ylab="First Diff. of TCI Mean",
      #ylim=c(-7,7),
      pch=16,
      col="grey"
