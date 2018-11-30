@@ -9,9 +9,10 @@ output:
 
 ```{r setup, include=FALSE}
 
+
 knitr::opts_chunk$set(echo = TRUE)
 library(RCurl)
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/MasterList%20(vstat%201.05).csv?token=ARrUXds6yZTAACMYheFYdBw0AMAm5Ud-ks5b7Y2cwA%3D%3D"),header=T)->foram.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/MasterList%20(vstat%201.1).csv"),header=T)->foram.dataframe
 foram.dataframe->morph
 
 "%w/o%" <- function(x, y) x[!x %in% y] #--  x without y
@@ -90,34 +91,37 @@ range.line.plot<-function(var.A,y.axis.label,family.ID,origin,extin){
   spacer<-4.5
   #setting colors
   #these are based on the colors set in the other function (vioplot.pca)
-  c(brewer.pal(12,'Set3'),brewer.pal(8,"Set2"),brewer.pal(9,'Set1'),'black','grey','black','brown')->col.temp
+  c(brewer.pal(12,'Set3'),brewer.pal(8,"Set2"),brewer.pal(9,'Set1'),'black','grey','black','brown','blue')->col.temp
   fam.col<-rep(NA,length(family.ID))
   droplevels(family.ID)->family.ID
   col.code<-rep(NA,times=length(levels(family.ID)))
   for(i in 1:length(levels(family.ID))){
     levels(family.ID)[i]->temp.ID
     if(temp.ID == "Candeinidae"){col.code[i]<-1}
+    if(temp.ID == "Globigerinitidae"){col.code[i]<-8}
     if(temp.ID == "Cassigerinellidae"){col.code[i]<-3}
     if(temp.ID == "Chiloguembelinidae"){col.code[i]<-4}
     if(temp.ID == "Favusellidae"){col.code[i]<-5}
+    if(temp.ID == "Rotaliporidae"){col.code[i]<-22}
     if(temp.ID == "Globigerinelloididae"){col.code[i]<-6}
     if(temp.ID == "Globigerinidae"){col.code[i]<-7}
-    if(temp.ID == "Globoquadrinidae"){col.code[i]<-8}
     if(temp.ID == "Globorotaliidae"){col.code[i]<-9}
     if(temp.ID == "Globotruncanidae"){col.code[i]<-10}
-    if(temp.ID == "Globuligerinidae"){col.code[i]<-11}
+    if(temp.ID == "Rugoglobigerinidae"){col.code[i]<-23}
+    if(temp.ID == "Conoglobigerinidae"){col.code[i]<-11}
     if(temp.ID == "Guembelitriidae"){col.code[i]<-13}
     if(temp.ID == "Hantkeninidae"){col.code[i]<-14}
     if(temp.ID == "Hastigerinidae"){col.code[i]<-15}
     if(temp.ID == "Hedbergellidae"){col.code[i]<-16}
+    if(temp.ID == "Globanomalidae"){col.code[i]<-33}
+    if(temp.ID == "Praehedbergellidae"){col.code[i]<-34}
     if(temp.ID == "Heterohelicidae"){col.code[i]<-19}
     if(temp.ID == "Planomalinidae"){col.code[i]<-21}
-    if(temp.ID == "Rotaliporidae"){col.code[i]<-22}
-    if(temp.ID == "Rugoglobigerinidae"){col.code[i]<-23}
     if(temp.ID == "Schackoinidae"){col.code[i]<-27}
     if(temp.ID == "Truncorotaloididae"){col.code[i]<-31}
     if(temp.ID == "UNKNOWN"){col.code[i]<-32}
-    if(temp.ID == "Paraticinellinae"){col.code[i]<-33}
+    
+    
   }
   col.key<-cbind(levels(family.ID),col.code) #col.key is now a 2-col obj with family (c1) and color.index (c2)
   for(i in 1:nrow(col.key)){
@@ -156,7 +160,7 @@ range.line.plot<-function(var.A,y.axis.label,family.ID,origin,extin){
               wex=spacer,
               na.rm=T)
       text(-{counter-0.5}*spacer,
-           -10,
+           3,
            labels=i,
            col=col.key[which(col.key[,1] == i),2],
            srt=90
@@ -200,28 +204,28 @@ range.line.plot<-function(var.A,y.axis.label,family.ID,origin,extin){
 foram.dataframe->normalized.foram
 
 #normalization process (using 'vegan' decostand, method=range)
-for(i in 13:36){
+for(i in 15:38){
   decostand(normalized.foram[,i],method= 'range',margin=2,na.rm=T)->normalized.foram[,i]
 }
 #making the index
-rowSums(normalized.foram[,13:36])/22->test.complex.index
+rowSums(normalized.foram[,15:38])/22->test.complex.index
 ## What follows is relic code from ~2009 when I was an even worse programmer. My apologizes, but i'm not rewriting this shit at this point. It works well enough.
 attach(foram.dataframe)
 #wanted age model reference
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Zone%20scheme.csv?token=ARrUXRf4jlfHuuIqnqEhduz-DfAzuL75ks5b7Y-BwA%3D%3D"),header=T)->timeresolution.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Zone%20scheme.csv"),header=T)->timeresolution.dataframe
 attach(timeresolution.dataframe)
 #periods
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Periods.csv?token=ARrUXZUwxHEGX7ft1S5hq2u7IULuoIQRks5b7Y_pwA%3D%3D"),header=T)->hist.bin.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Periods.csv"),header=T)->hist.bin.dataframe
 attach(hist.bin.dataframe)
 #OAEs
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/OAEs.csv?token=ARrUXUu5EZPctC469Wj8oxGn1uW7Nai_ks5b7ZBPwA%3D%3D"),header=T)->OAEs.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/OAEs.csv"),header=T)->OAEs.dataframe
 attach(OAEs.dataframe)
 
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Genus%20Abbr%20key.csv?token=ARrUXW9-Z4MxdWtBmof1H3_L9XMqEkDbks5b7ZCgwA%3D%3D"),header=T)->Abbr.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Genus%20Abbr%20key.csv"),header=T)->Abbr.dataframe
 attach(Abbr.dataframe)
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Genus%20Abbr%20key%20ordered.csv?token=ARrUXc3d0BRBKDlV5OUShsWEuvgg1purks5b7ZDBwA%3D%3D"),header=T)->sAbbr.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Genus%20Abbr%20key%20ordered.csv"),header=T)->sAbbr.dataframe
 attach(sAbbr.dataframe)
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Family%20Abbr%20key.csv?token=ARrUXSqkHYAZGS0S7jJ-e0FXj7j7QBrOks5b7ZFOwA%3D%3D"),header=T)->Abbr.family.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Family%20Abbr%20key.csv"),header=T)->Abbr.family.dataframe
 attach(Abbr.family.dataframe)
 
 
@@ -890,7 +894,7 @@ plot(0,0,
      xlim=c(170,0),
      #xlim=c(80,50),
      ylim=c(0,
-            80),
+            84),
      xlab='Time (Ma)',
      ylab="Diversity")
 #axis(side=2,at=seq(0,800,by=5))
@@ -1001,7 +1005,7 @@ Plot of the included morphometric parameters. used to look for correlations, so 
 foram.dataframe->morph
 exclude<-c(4)
 morph[1:length(morph[,1]) %w/o% exclude,]->morph
-morph[which(is.na(rowSums(morph[,inc])) == F),13:36]->pca.in
+morph[which(is.na(rowSums(morph[,inc])) == F),15:38]->pca.in
 decostand(pca.in[,inc],method='standardize',2)->pca.in
 princomp(pca.in)->res.pca
 plot(res.pca)
@@ -1014,7 +1018,7 @@ Results of the Principle Components Analysis (PCA). First, second, and third axe
 foram.dataframe->morph
 exclude<-c(4)
 morph[1:length(morph[,1]) %w/o% exclude,]->morph
-morph[which(is.na(rowSums(morph[,inc2])) == F),13:36]->pca.in
+morph[which(is.na(rowSums(morph[,inc2])) == F),15:38]->pca.in
 decostand(pca.in[,inc2],method='standardize',2)->pca.in
 princomp(pca.in)->res.pca2
 plot(res.pca2)

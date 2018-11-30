@@ -11,11 +11,11 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 require(RCurl)
 
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/MasterList%20(vstat%201.05).csv?token=ARrUXds6yZTAACMYheFYdBw0AMAm5Ud-ks5b7Y2cwA%3D%3D"),header=T)->foram.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/MasterList%20(vstat%201.1).csv"),header=T)->foram.dataframe
 morph<-foram.dataframe#[,13:36]
 "%w/o%" <- function(x, y) x[!x %in% y] #--  x without y
 
-#foram.dataframe[,13:36] are all the morph variables
+#foram.dataframe[,13:36] #now 15:38 are all the morph variables
 time.mean<-function(data,origin,extin,resolution=0.1){
  if(length(resolution) == 1){
    max.time<-max(origin)
@@ -199,35 +199,35 @@ range.line.plot<-function(var.A,y.axis.label,family.ID,origin,extin){
 foram.dataframe->normalized.foram
 
 #normalization process (using 'vegan' decostand, method=range)
-for(i in 13:36){
+for(i in 15:38){
   decostand(normalized.foram[,i],method= 'range',margin=2,na.rm=T)->normalized.foram[,i]
 }
 #making the index
-rowSums(normalized.foram[,13:36])/22->test.complex.index
+rowSums(normalized.foram[,15:38])/22->test.complex.index
 ## What follows is relic code from ~2009 when I was an even worse programmer. My apologizes, but i'm not rewriting this shit at this point. It works well enough.
 attach(foram.dataframe)
 #wanted age model reference
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Zone%20scheme.csv?token=ARrUXRf4jlfHuuIqnqEhduz-DfAzuL75ks5b7Y-BwA%3D%3D"),header=T)->timeresolution.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Zone%20scheme.csv"),header=T)->timeresolution.dataframe
 
 attach(timeresolution.dataframe)
 
 #periods
 
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Periods.csv?token=ARrUXZUwxHEGX7ft1S5hq2u7IULuoIQRks5b7Y_pwA%3D%3D"),header=T)->hist.bin.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Periods.csv"),header=T)->hist.bin.dataframe
 
 
 attach(hist.bin.dataframe)
 #OAEs
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/OAEs.csv?token=ARrUXUu5EZPctC469Wj8oxGn1uW7Nai_ks5b7ZBPwA%3D%3D"),header=T)->OAEs.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/OAEs.csv"),header=T)->OAEs.dataframe
 attach(OAEs.dataframe)
 
 #Abbrieviations
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Genus%20Abbr%20key.csv?token=ARrUXW9-Z4MxdWtBmof1H3_L9XMqEkDbks5b7ZCgwA%3D%3D"),header=T)->Abbr.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Genus%20Abbr%20key.csv"),header=T)->Abbr.dataframe
 attach(Abbr.dataframe)
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Genus%20Abbr%20key%20ordered.csv?token=ARrUXc3d0BRBKDlV5OUShsWEuvgg1purks5b7ZDBwA%3D%3D"),header=T)->sAbbr.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Genus%20Abbr%20key%20ordered.csv"),header=T)->sAbbr.dataframe
 attach(sAbbr.dataframe)
 
-read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Family%20Abbr%20key.csv?token=ARrUXSqkHYAZGS0S7jJ-e0FXj7j7QBrOks5b7ZFOwA%3D%3D"),header=T)->Abbr.family.dataframe
+read.csv(text=getURL("https://raw.githubusercontent.com/Fraass/TestComplexityAll/master/Data/Family%20Abbr%20key.csv"),header=T)->Abbr.family.dataframe
 attach(Abbr.family.dataframe)
 
 
@@ -867,7 +867,7 @@ plot(0,0,
      ylab="Diversity")
 #axis(side=2,at=seq(0,800,by=5))
 brewer.pal(n=8,name="Set2")->div.pallet
-lines(time.div(test.complex.index,
+lines(time.div(1:length(genus.dataframe$genus),
                morph$origin,
                morph$extin,
                0.25),
@@ -1006,7 +1006,7 @@ Plot of the included morphometric parameters. used to look for correlations, so 
 foram.dataframe->morph
 exclude<-c(4)
 morph[1:length(morph[,1]) %w/o% exclude,]->morph
-morph[which(is.na(rowSums(morph[,inc])) == F),13:36]->pca.in
+morph[which(is.na(rowSums(morph[,inc])) == F),15:38]->pca.in
 decostand(pca.in[,inc],method='standardize',2)->pca.in
 princomp(pca.in)->res.pca
 plot(res.pca)
@@ -1019,7 +1019,7 @@ Results of the Principle Components Analysis (PCA). First, second, and third axe
 foram.dataframe->morph
 exclude<-c(4)
 morph[1:length(morph[,1]) %w/o% exclude,]->morph
-morph[which(is.na(rowSums(morph[,inc2])) == F),13:36]->pca.in
+morph[which(is.na(rowSums(morph[,inc2])) == F),15:38]->pca.in
 decostand(pca.in[,inc2],method='standardize',2)->pca.in
 princomp(pca.in)->res.pca2
 plot(res.pca2)
@@ -1043,6 +1043,30 @@ So, back to test complexity then.
 ## Test Complexity
 ```{r test complexity}
 foram.dataframe->morph
+
+
+which(morph$species == "holmdelensis")->h
+which(morph$species == "monmouthensis")->m
+build.tci<-morph
+for(i in inc){
+  {morph[h,i]+morph[m,i]}/2->simple.value
+  build.tci[,i]<-morph[,i]-simple.value
+}
+plot(0,0,
+     type='n',
+     xlim=c(170,0),
+     ylim=c(min(build.tci$fcarea,na.rm=T),
+            max(build.tci$fcarea,na.rm=T)),
+     xlab='Time (Ma)',
+     ylab="fcarea minus simple")
+segments(build.tci$origin,
+         build.tci$fcarea,
+         build.tci$extin,
+         build.tci$fcarea)
+
+
+
+
  for(i in inc){
     decostand(morph[,i],method= 'standardize',margin=2,na.rm=T)->morph[,i]
    abs(morph[,i])->morph[,i]
