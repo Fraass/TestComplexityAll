@@ -32,7 +32,7 @@ segments(build.tci$origin,
 
 
 plot(q[2:84],d.t.mean,
-     xlab="q(1)",ylab="first diff Mean in Test Complexity",pch=16,col="grey")
+     xlab="First Difference in Origination (q)",ylab="First Difference Mean in Test Complexity",pch=16,col="grey")
 cor.test(q[2:84],d.t.mean)
 points(q[sig.extin+1],d.t.mean[sig.extin],pch=3,lwd=2,col='red')
 points(q[sig.origin+1],d.t.mean[sig.origin],pch=4,lwd=2,col='blue')
